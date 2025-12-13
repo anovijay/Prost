@@ -27,26 +27,6 @@ struct GoetheA1ProgressCard: View {
         }
     }
     
-    // Find weakest part for guidance
-    private var weakestPart: (number: Int, name: String, description: String)? {
-        guard progress.isStarted else { return nil }
-        
-        let scores = [
-            (1, progress.part1ScorePercentage, "Part 1", "Informal Texts (True/False)"),
-            (2, progress.part2ScorePercentage, "Part 2", "Situations (A/B Choices)"),
-            (3, progress.part3ScorePercentage, "Part 3", "Signs & Notices (True/False)")
-        ]
-        
-        guard let weakest = scores.min(by: { $0.1 < $1.1 }) else { return nil }
-        
-        // If all parts >= 80%, no weak part
-        if weakest.1 >= 80 {
-            return nil
-        }
-        
-        return (weakest.0, weakest.2, weakest.3)
-    }
-    
     var body: some View {
         VStack(spacing: 0) {
             // Header (always visible) - tappable to expand/collapse
@@ -130,43 +110,6 @@ struct GoetheA1ProgressCard: View {
                             )
                         }
                         .padding(.horizontal, 16)
-                        
-                        // Smart guidance
-                        if let weak = weakestPart {
-                            HStack(alignment: .top, spacing: 8) {
-                                Image(systemName: "target")
-                                    .font(.body)
-                                    .foregroundStyle(.blue)
-                                
-                                VStack(alignment: .leading, spacing: 2) {
-                                    Text("Next: Practice \(weak.name)")
-                                        .font(ProstTheme.Typography.body.weight(.medium))
-                                        .foregroundStyle(.primary)
-                                    Text(weak.description)
-                                        .font(ProstTheme.Typography.caption)
-                                        .foregroundStyle(.secondary)
-                                }
-                            }
-                            .padding(12)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .background(Color.blue.opacity(0.08))
-                            .cornerRadius(8)
-                            .padding(.horizontal, 16)
-                        } else {
-                            HStack(spacing: 8) {
-                                Image(systemName: "star.fill")
-                                    .font(.body)
-                                    .foregroundStyle(.yellow)
-                                Text("All parts strong! Ready for the exam.")
-                                    .font(ProstTheme.Typography.body.weight(.medium))
-                                    .foregroundStyle(.primary)
-                            }
-                            .padding(12)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .background(Color.green.opacity(0.08))
-                            .cornerRadius(8)
-                            .padding(.horizontal, 16)
-                        }
                     } else {
                         // Not started: Show exam structure
                         VStack(alignment: .leading, spacing: 8) {
