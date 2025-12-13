@@ -40,6 +40,7 @@ extension ReadingPassage {
         )
 
         return ReadingPassage(
+            id: UUID(uuidString: "00000000-0000-0000-0000-000000000010")!,  // Fixed UUID for consistency
             title: "Ein Tag in Berlin",
             level: "A2",
             text: """
@@ -72,7 +73,8 @@ extension User {
 extension PassageCompletion {
     static var sampleCompletions: [PassageCompletion] {
         let userId = User.sampleUser.id
-        let passageId = ReadingPassage.sampleBerlinDay.id
+        // Use fixed UUID from sample passage
+        let passageId = UUID(uuidString: "00000000-0000-0000-0000-000000000010")!
         
         return [
             // First attempt - not perfect
@@ -100,7 +102,8 @@ extension PassageCompletion {
 extension UserProgress {
     static var sampleProgress: [UserProgress] {
         let userId = User.sampleUser.id
-        let passageId = ReadingPassage.sampleBerlinDay.id
+        // Use fixed UUID from sample passage
+        let berlinPassageId = UUID(uuidString: "00000000-0000-0000-0000-000000000010")!
         
         return [
             // A1 - Completed level
@@ -118,7 +121,7 @@ extension UserProgress {
             UserProgress(
                 userId: userId,
                 level: "A2",
-                completedPassageIds: [passageId] + Array(repeating: UUID(), count: 4),
+                completedPassageIds: [berlinPassageId] + Array(repeating: UUID(), count: 4),
                 totalAttempts: 7,
                 averageScore: 0.58,
                 bestScore: 1.0,

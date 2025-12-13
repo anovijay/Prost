@@ -8,17 +8,17 @@
 import SwiftUI
 
 struct ReadingDashboardView: View {
-    let levels: [LevelProgress] = LevelProgress.sampleLevels
+    let progress: [UserProgress] = UserProgress.sampleProgress
     
     var body: some View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
-                    ForEach(levels) { levelProgress in
+                    ForEach(progress) { userProgress in
                         NavigationLink {
-                            LevelPassagesView(levelProgress: levelProgress)
+                            LevelPassagesView(progress: userProgress)
                         } label: {
-                            LevelProgressCard(levelProgress: levelProgress)
+                            LevelProgressCard(progress: userProgress)
                         }
                         .buttonStyle(.plain)
                     }

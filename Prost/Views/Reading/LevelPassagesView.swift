@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct LevelPassagesView: View {
-    let levelProgress: LevelProgress
+    let progress: UserProgress
     
     var body: some View {
         ScrollView {
@@ -26,6 +26,12 @@ struct LevelPassagesView: View {
                                 .foregroundStyle(.secondary)
                         }
                         Spacer()
+                        // Show completion status if passage is completed
+                        if progress.completedPassageIds.contains(ReadingPassage.sampleBerlinDay.id) {
+                            Image(systemName: "checkmark.circle.fill")
+                                .font(.body)
+                                .foregroundStyle(.green)
+                        }
                         Image(systemName: "chevron.right")
                             .font(.body.weight(.semibold))
                             .foregroundStyle(.secondary)
@@ -37,7 +43,7 @@ struct LevelPassagesView: View {
             }
             .padding(ProstTheme.Spacing.screenPadding)
         }
-        .navigationTitle(levelProgress.level)
+        .navigationTitle(progress.level)
         .navigationBarTitleDisplayMode(.inline)
         .prostBackground()
     }

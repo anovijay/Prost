@@ -8,12 +8,12 @@
 import SwiftUI
 
 struct LevelProgressCard: View {
-    let levelProgress: LevelProgress
+    let progress: UserProgress
     
     var body: some View {
         HStack(spacing: 16) {
             // Level badge
-            Text(levelProgress.level)
+            Text(progress.level)
                 .font(.system(.title2, design: .rounded).weight(.bold))
                 .foregroundStyle(.primary)
                 .frame(width: 60, height: 60)
@@ -27,14 +27,30 @@ struct LevelProgressCard: View {
                 )
             
             VStack(alignment: .leading, spacing: 6) {
-                Text("\(levelProgress.passagesCompleted) passages completed")
+                Text("\(progress.completedCount) passages completed")
                     .font(ProstTheme.Typography.body)
                     .foregroundStyle(.primary)
                 
-                if levelProgress.passagesCompleted > 0 {
-                    Text("Overall score: \(Int(levelProgress.overallScore * 100))%")
-                        .font(ProstTheme.Typography.caption)
-                        .foregroundStyle(.secondary)
+                if progress.completedCount > 0 {
+                    // Show both latest and best scores (Q1 requirement)
+                    HStack(spacing: 12) {
+                        HStack(spacing: 4) {
+                            Text("Latest:")
+                                .font(ProstTheme.Typography.caption)
+                                .foregroundStyle(.secondary)
+                            Text("\(progress.latestScorePercentage)%")
+                                .font(ProstTheme.Typography.caption.weight(.semibold))
+                                .foregroundStyle(.primary)
+                        }
+                        HStack(spacing: 4) {
+                            Text("Best:")
+                                .font(ProstTheme.Typography.caption)
+                                .foregroundStyle(.secondary)
+                            Text("\(progress.bestScorePercentage)%")
+                                .font(ProstTheme.Typography.caption.weight(.semibold))
+                                .foregroundStyle(.primary)
+                        }
+                    }
                 } else {
                     Text("Not started")
                         .font(ProstTheme.Typography.caption)

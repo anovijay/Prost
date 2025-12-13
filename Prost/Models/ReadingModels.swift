@@ -113,9 +113,11 @@ struct PassageCompletion: Identifiable, Codable, Hashable {
         self.id = id
         self.userId = userId
         self.passageId = passageId
-        self.score = score
+        // Clamp score to valid range (0.0 to 1.0)
+        self.score = min(max(score, 0.0), 1.0)
         self.completedAt = completedAt
-        self.attemptNumber = attemptNumber
+        // Ensure attempt number is at least 1
+        self.attemptNumber = max(attemptNumber, 1)
     }
     
     // Computed properties
@@ -162,6 +164,20 @@ struct UserProgress: Identifiable, Codable, Hashable {
     var averageScorePercentage: Int { Int(averageScore * 100) }
     var bestScorePercentage: Int { Int(bestScore * 100) }
     var latestScorePercentage: Int { Int(latestScore * 100) }
+    
+    // Validation
+    var isValid: Bool {
+        // If there are completed passages, there must be attempts
+        let attemptsValid = completedPassageIds.isEmpty || totalAttempts >= completedPassageIds.count
+        // Best score should be >= average score
+        let scoresValid = bestScore >= averageScore
+        // All scores should be in valid range
+        let rangesValid = (0.0...1.0).contains(averageScore) 
+            && (0.0...1.0).contains(bestScore) 
+            && (0.0...1.0).contains(latestScore)
+        
+        return attemptsValid && scoresValid && rangesValid
+    }
 }
 
 // MARK: - Legacy (Deprecated - use UserProgress instead)
