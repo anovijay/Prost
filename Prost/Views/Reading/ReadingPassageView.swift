@@ -107,6 +107,7 @@ struct ReadingPassageView: View {
         let completion = CompletionService.createCompletion(
             userId: appState.currentUser.id,
             passageId: passage.id,
+            level: passage.level,
             score: 1.0,  // Perfect score for manual completion
             attemptNumber: attemptNumber
         )

@@ -16,12 +16,14 @@ struct CompletionService {
     static func createCompletion(
         userId: UUID,
         passageId: UUID,
+        level: String,
         score: Double,
         attemptNumber: Int
     ) -> PassageCompletion {
         PassageCompletion(
             userId: userId,
             passageId: passageId,
+            level: level,
             score: score,
             completedAt: Date(),
             attemptNumber: attemptNumber
@@ -48,8 +50,10 @@ struct CompletionService {
         newCompletion: PassageCompletion,
         allCompletions: [PassageCompletion]
     ) -> UserProgress {
-        // Get all completions for this user and level
-        let userCompletions = allCompletions.filter { $0.userId == currentProgress.userId }
+        // CRITICAL FIX: Filter by userId AND level (not just userId)
+        let levelCompletions = allCompletions.filter { 
+            $0.userId == currentProgress.userId && $0.level == currentProgress.level
+        }
         
         // Add passage to completed list if not already there
         var completedIds = currentProgress.completedPassageIds
@@ -58,13 +62,13 @@ struct CompletionService {
         }
         
         // Calculate total attempts (all completions for this user in this level)
-        let totalAttempts = userCompletions.count
+        let totalAttempts = levelCompletions.count
         
-        // Calculate average score across all attempts
-        let allScores = userCompletions.map { $0.score }
+        // Calculate average score across all attempts in this level
+        let allScores = levelCompletions.map { $0.score }
         let averageScore = allScores.isEmpty ? 0.0 : allScores.reduce(0.0, +) / Double(allScores.count)
         
-        // Get best score
+        // Get best score in this level
         let bestScore = allScores.max() ?? 0.0
         
         // Latest score is from the new completion
@@ -121,7 +125,10 @@ struct CompletionService {
         newScore: Double,
         previousCompletions: [PassageCompletion]
     ) -> ScoreComparison {
-        guard let previousScore = previousCompletions.last?.score else {
+        // Sort by date to ensure we compare with the most recent previous attempt
+        guard let previousScore = previousCompletions
+            .sorted(by: { $0.completedAt < $1.completedAt })
+            .last?.score else {
             return .firstAttempt
         }
         

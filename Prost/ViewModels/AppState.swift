@@ -41,16 +41,12 @@ class AppState: ObservableObject {
         if let index = userProgress.firstIndex(where: { $0.level == passage.level }) {
             let currentProgress = userProgress[index]
             
-            // Get all completions for this level
-            let levelCompletions = completions.filter { completion in
-                // Find all passages for this level and check if completion matches
-                return completion.userId == currentUser.id
-            }
-            
+            // CompletionService.updateProgress now handles level filtering internally
+            // Just pass all completions
             let updatedProgress = CompletionService.updateProgress(
                 currentProgress: currentProgress,
                 newCompletion: completion,
-                allCompletions: levelCompletions
+                allCompletions: completions
             )
             
             userProgress[index] = updatedProgress

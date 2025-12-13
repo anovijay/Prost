@@ -74,21 +74,23 @@ extension PassageCompletion {
     static var sampleCompletions: [PassageCompletion] {
         let userId = User.sampleUser.id
         // Use fixed UUID from sample passage
-        let passageId = UUID(uuidString: "00000000-0000-0000-0000-000000000010")!
+        let berlinPassageId = UUID(uuidString: "00000000-0000-0000-0000-000000000010")!
         
         return [
-            // First attempt - not perfect
+            // A2: Ein Tag in Berlin - First attempt (not perfect)
             PassageCompletion(
                 userId: userId,
-                passageId: passageId,
+                passageId: berlinPassageId,
+                level: "A2",
                 score: 0.67,
                 completedAt: Date(timeIntervalSinceNow: -5 * 24 * 60 * 60), // 5 days ago
                 attemptNumber: 1
             ),
-            // Second attempt - improved
+            // A2: Ein Tag in Berlin - Second attempt (perfect)
             PassageCompletion(
                 userId: userId,
-                passageId: passageId,
+                passageId: berlinPassageId,
+                level: "A2",
                 score: 1.0,
                 completedAt: Date(timeIntervalSinceNow: -2 * 24 * 60 * 60), // 2 days ago
                 attemptNumber: 2
@@ -117,15 +119,15 @@ extension UserProgress {
                 latestScore: 0.70,
                 lastActivityAt: Date(timeIntervalSinceNow: -10 * 24 * 60 * 60) // 10 days ago
             ),
-            // A2 - Current level (includes sample passage)
+            // A2 - Current level (includes sample passage with 2 attempts)
             UserProgress(
                 userId: userId,
                 level: "A2",
-                completedPassageIds: [berlinPassageId] + Array(repeating: UUID(), count: 4),
-                totalAttempts: 7,
-                averageScore: 0.58,
-                bestScore: 1.0,
-                latestScore: 1.0,
+                completedPassageIds: [berlinPassageId],
+                totalAttempts: 2,  // 2 attempts on 1 passage
+                averageScore: 0.835,  // (0.67 + 1.0) / 2
+                bestScore: 1.0,  // Best of the 2 attempts
+                latestScore: 1.0,  // Most recent attempt (2 days ago)
                 lastActivityAt: Date(timeIntervalSinceNow: -2 * 24 * 60 * 60) // 2 days ago
             ),
             // B1 - Not started

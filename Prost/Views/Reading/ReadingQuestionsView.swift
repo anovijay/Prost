@@ -89,6 +89,7 @@ struct ReadingQuestionsView: View {
         let completion = CompletionService.createCompletion(
             userId: appState.currentUser.id,
             passageId: passage.id,
+            level: passage.level,
             score: score,
             attemptNumber: attemptNumber
         )

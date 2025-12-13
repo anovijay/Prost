@@ -153,11 +153,12 @@ Prost/
 
 6. **`PassageCompletion`**
    - Tracks individual passage completion attempts
-   - Properties: id, userId, passageId, score, completedAt, attemptNumber
+   - Properties: id, userId, passageId, **level (CEFR level for filtering)**, score, completedAt, attemptNumber
    - Computed: scorePercentage (0-100), isPerfect (score == 1.0)
    - **Validation**: Score clamped to 0.0-1.0 range, attemptNumber enforced minimum of 1
+   - **Critical**: Level field enables per-level statistics aggregation
    - Conforms to: Identifiable, Codable, Hashable
-   - Purpose: Record each quiz submission with metadata
+   - Purpose: Record each quiz submission with metadata and level context
 
 7. **`UserProgress`**
    - Aggregates user performance per level
@@ -223,18 +224,20 @@ Prost/
    - Demonstrates proper model structure with search tags
 
 3. **`PassageCompletion.sampleCompletions`**
-   - 2 completion records for sample passage
+   - 2 completion records for A2 sample passage
    - **Uses fixed passage UUID** for proper linking
+   - **Includes level field** ("A2") for filtering
    - Attempt 1: 67% score, 5 days ago
    - Attempt 2: 100% score (perfect), 2 days ago
    - Shows progression over attempts
 
 4. **`UserProgress.sampleProgress`**
    - Array of 4 levels (A1, A2, B1, B2) with aggregated data
-   - A1: 10 passages completed, avg 65%, best 90%, latest 70%
-   - A2: 5 passages completed, avg 58%, best 100%, latest 100%
+   - A1: 10 passages completed, avg 65%, best 90%, latest 70% (simulated)
+   - **A2: 1 passage completed, 2 attempts, avg 83.5%, best 100%, latest 100%** (realistic)
    - **A2 includes fixed passage UUID** in completedPassageIds
    - B1/B2: Not started (0 passages, 0 attempts)
+   - **Demonstrates realistic per-level statistics** matching actual completions
    - Demonstrates proper data linking and completion tracking
 
 5. **`LevelProgress.sampleLevels`** (Deprecated)
@@ -280,8 +283,9 @@ Prost/
 
 **Public Methods**:
 
-1. **`createCompletion(userId:passageId:score:attemptNumber:)`**
+1. **`createCompletion(userId:passageId:level:score:attemptNumber:)`**
    - Creates a new PassageCompletion record
+   - **Requires level parameter** (A1, A2, B1, B2) for filtering
    - Validates score (clamped to 0.0-1.0)
    - Validates attempt number (minimum 1)
    - Returns: PassageCompletion
@@ -291,10 +295,11 @@ Prost/
    - Returns: next attempt number (1, 2, 3, ...)
 
 3. **`updateProgress(currentProgress:newCompletion:allCompletions:)`**
+   - **CRITICAL FIX**: Filters completions by userId AND level (not just userId)
    - Adds passage to completedPassageIds (if new)
-   - Increments totalAttempts
-   - Recalculates averageScore (mean of all attempts)
-   - Updates bestScore (max score)
+   - Increments totalAttempts (for this level only)
+   - Recalculates averageScore (mean of attempts in this level)
+   - Updates bestScore (max score in this level)
    - Updates latestScore (new completion score)
    - Sets lastActivityAt to now
    - Returns: Updated UserProgress
@@ -326,11 +331,13 @@ Prost/
 **Business Rules**:
 - Score automatically clamped to 0.0-1.0 range
 - Attempt numbers start at 1 and increment per passage
-- Average score = mean of ALL attempts (not per passage)
-- Best score = highest score across all attempts
-- Latest score = most recent completion
+- **Average score = mean of all attempts IN THIS LEVEL** (per-level aggregation)
+- **Best score = highest score IN THIS LEVEL** (per-level aggregation)
+- **Latest score = most recent completion IN THIS LEVEL** (per-level aggregation)
 - Score comparison uses 1% threshold to avoid noise
+- **Score comparison sorts by date** to ensure comparing with most recent
 - Celebration emoji (🎉) on improvements
+- **Level filtering enabled**: Each level's stats are independent
 
 **Usage Example**:
 ```swift
@@ -1199,5 +1206,5 @@ SomeView()
 ---
 
 **Last Updated**: December 13, 2025  
-**Version**: 2.0.0 (Phase 2: Completion tracking UI implemented)
+**Version**: 2.0.1 (Critical fixes: Per-level statistics aggregation)
 

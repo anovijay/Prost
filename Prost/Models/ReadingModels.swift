@@ -100,6 +100,7 @@ struct PassageCompletion: Identifiable, Codable, Hashable {
     let id: UUID
     let userId: UUID
     let passageId: UUID
+    let level: String  // CEFR level (A1, A2, B1, B2) for filtering
     let score: Double  // 0.0 to 1.0
     let completedAt: Date
     let attemptNumber: Int  // 1st attempt, 2nd attempt, etc.
@@ -107,12 +108,14 @@ struct PassageCompletion: Identifiable, Codable, Hashable {
     init(id: UUID = UUID(), 
          userId: UUID, 
          passageId: UUID, 
+         level: String,
          score: Double, 
          completedAt: Date = Date(), 
          attemptNumber: Int) {
         self.id = id
         self.userId = userId
         self.passageId = passageId
+        self.level = level
         // Clamp score to valid range (0.0 to 1.0)
         self.score = min(max(score, 0.0), 1.0)
         self.completedAt = completedAt
