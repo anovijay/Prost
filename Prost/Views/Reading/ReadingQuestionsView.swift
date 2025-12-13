@@ -82,20 +82,9 @@ struct ReadingQuestionsView: View {
     }
     
     // MARK: - Actions
-    
+
     private func submitAnswers() {
-        let attemptNumber = appState.getNextAttemptNumber(for: passage.id)
-        
-        let completion = CompletionService.createCompletion(
-            userId: appState.currentUser.id,
-            passageId: passage.id,
-            level: passage.level,
-            score: score,
-            attemptNumber: attemptNumber
-        )
-        
-        appState.addCompletion(completion, for: passage)
-        currentCompletion = completion
+        currentCompletion = appState.recordCompletion(for: passage, score: score)
         showResults = true
     }
 }
