@@ -173,6 +173,14 @@ Prost/
    - Marked with @available(*, deprecated)
    - Kept for backward compatibility during migration
 
+9. **`PassageFilters`** (NEW - Phase 3)
+   - Model for passage search, filtering, and sorting state
+   - Properties: searchText, selectedTags, completionFilter, sortOption
+   - Computed: isActive (checks if any non-default filters applied)
+   - Nested enums: CompletionFilter (.all, .completed, .incomplete), SortOption (.title, .dateAdded, .bestScore, .attempts)
+   - Conforms to: Codable, Equatable
+   - Purpose: Centralize all filtering state in one model
+
 **Business Rules**:
 - Each passage belongs to exactly one level (A1, A2, B1, B2, C1, C2)
 - Each question has exactly one correct answer
@@ -377,6 +385,79 @@ let newProgress = CompletionService.updateProgress(
 
 ---
 
+#### `Services/PassageFilterService.swift` (NEW - Phase 3)
+**Scope**: Filtering and sorting logic for passage lists  
+**Responsibility**:
+- Filter passages by search text (title matching)
+- Filter passages by tags (AND logic)
+- Filter passages by completion status
+- Sort passages by various criteria
+- Combine filtering and sorting in one call
+
+**Boundaries**:
+- ✅ Pure business logic (no UI)
+- ✅ Filtering operations
+- ✅ Sorting operations
+- ❌ No state management
+- ❌ No persistence
+
+**Public Methods**:
+
+1. **`filterPassages(_:filters:completionInfo:)`**
+   - Filters passage array based on PassageFilters criteria
+   - Text search: case-insensitive title matching
+   - Tag filter: AND logic (passage must have ALL selected tags)
+   - Completion filter: all/completed/incomplete
+   - Returns: Filtered [ReadingPassage]
+
+2. **`sortPassages(_:sortOption:completionInfo:)`**
+   - Sorts passage array by specified option
+   - title: Alphabetical (case-insensitive)
+   - dateAdded: Original order (newest first)
+   - bestScore: Highest score first, ties broken alphabetically
+   - attempts: Most attempts first, ties broken alphabetically
+   - Returns: Sorted [ReadingPassage]
+
+3. **`applyFiltersAndSort(to:filters:completionInfo:)`**
+   - Convenience method: filter then sort
+   - Returns: Filtered and sorted [ReadingPassage]
+
+**Business Rules**:
+- **Text search**: Case-insensitive, matches title only (Phase 3)
+- **Tag filtering**: AND logic - passage must contain ALL selected tags
+- **Completion filtering**: 
+  * all: No filtering
+  * completed: Only passages with at least 1 completion
+  * incomplete: Only passages with 0 completions
+- **Sorting tie-breakers**: Always alphabetical by title
+- **Empty results**: Returns empty array (UI shows empty state)
+
+**Usage Example**:
+```swift
+// Build completion info
+let completionInfo: [UUID: PassageCompletionInfo] = [...]
+
+// Apply filters and sort
+let results = PassageFilterService.applyFiltersAndSort(
+    to: passages,
+    filters: filters,
+    completionInfo: completionInfo
+)
+```
+
+**Dependencies**:
+- ReadingModels.swift (ReadingPassage)
+- PassageFilters.swift (filter model)
+- Foundation (UUID)
+
+**Architecture Notes**:
+- Stateless service (all functions are static)
+- Pure functions (deterministic)
+- Easily testable with sample data
+- No side effects
+
+---
+
 ### ViewModels Layer
 
 #### `ViewModels/AppState.swift`
@@ -504,50 +585,66 @@ ContentView()
 
 ---
 
-#### `Views/Reading/LevelPassagesView.swift`
-**Scope**: List of passages for a specific level with completion status  
+#### `Views/Reading/LevelPassagesView.swift` (ENHANCED - Phase 3)
+**Scope**: Searchable, filterable list of passages with completion status  
 **Responsibility**:
-- Display all passages available for the selected level
-- **Show completion status for each passage**
-- **Display attempt count and best score**
+- Display all passages for the selected level
+- **Search passages by title** (Phase 3)
+- **Filter by completion status** (all/completed/incomplete) (Phase 3)
+- **Filter by tags** (AND logic) (Phase 3)
+- **Sort passages** (title/date/score/attempts) (Phase 3)
+- Show completion status for each passage
+- Display attempt count and best score
 - Navigate to individual passage reading view
-- Show passage metadata (title, question count)
+- Show empty states when no results
 
 **Boundaries**:
+- ✅ Search and filter UI
 - ✅ Passage list for one level
 - ✅ Completion badges and scores
-- ✅ Attempt count display
+- ✅ Empty state feedback
 - ✅ Navigation to ReadingPassageView
 - ❌ No passage content display
 - ❌ No question logic
+- ❌ No filter persistence (Phase 4)
 
 **Business Rules**:
-- Display passages for the selected level only
-- Show passage title and question count
-- **Show completion indicators**:
+- **Search**: Case-insensitive title matching
+- **Tag filter**: AND logic - passage must have ALL selected tags
+- **Completion filter**: all (default), completed (≥1 attempt), incomplete (0 attempts)
+- **Sorting**: title (A-Z), dateAdded (newest first), bestScore (highest first), attempts (most first)
+- **Empty state**: Show helpful message when no results or filters active
+- **Clear filters**: Button appears when any non-default filter active
+- Show completion indicators:
   - Empty circle: Not started
   - Checkmark + best score: Completed
   - Star icon: Perfect score (100%)
   - Attempt count: "2 attempts"
-- **Best score displayed prominently** (e.g., "100%")
-- Currently shows sample data (1 passage per level)
-- Future: Load passages dynamically from backend
 
-**UI Elements**:
-- NavigationStack with level as title (e.g., "A2")
-- ScrollView with enhanced passage cards
-- Each card shows:
-  - Title and question count
-  - Attempt count (if completed)
-  - Best score percentage (if completed)
-  - Completion checkmark (if completed)
-  - Perfect score star (if 100%)
-- Each card is a NavigationLink to ReadingPassageView
+**UI Elements** (Phase 3 Enhanced):
+- **SearchBar** at top
+- **Filter chips** (horizontal scroll):
+  - Completion filter: All/Completed/Not Started
+  - Sort menu: Title/Recently Added/Best Score/Most Attempts
+  - Tags button: Opens TagFilterSheet
+  - Clear button: Resets all filters (only when active)
+- **Passage cards** (filtered and sorted)
+- **Empty state** (when no results)
 
 **State Management**:
 - `@EnvironmentObject appState: AppState` - reads completion history
+- `@State private var filters: PassageFilters` - search and filter state
+- `@State private var showTagFilterSheet: Bool` - sheet presentation
 - Receives `progress: UserProgress` as input
-- Computed: `passageCompletionInfo` - aggregates completion data per passage
+- Computed: 
+  * `passageCompletionInfo: [UUID: PassageCompletionInfo]` - all passage completion data
+  * `filteredAndSortedPassages: [ReadingPassage]` - applies filters and sort
+  * `availableTags: [String]` - unique tags from all passages
+
+**Filtering & Sorting** (Phase 3):
+- Uses `PassageFilterService.applyFiltersAndSort()` for business logic
+- Filters applied first, then sorting
+- Reactive: Updates instantly as user types/selects
 
 **Supporting Types**:
 - `PassageCompletionInfo` - holds attemptCount and bestScore
@@ -555,9 +652,11 @@ ContentView()
 
 **Dependencies**:
 - AppState (completion history)
+- PassageFilterService (filtering/sorting logic)
+- SearchBar, FilterChip, TagFilterSheet, EmptyStateView (UI components)
 - ReadingPassageView.swift (navigation target)
 - ProstTheme (styling)
-- ReadingModels.swift (data)
+- ReadingModels.swift, PassageFilters.swift (data)
 - ReadingSamples.swift (mock passages)
 
 ---
@@ -891,6 +990,130 @@ QuestionCardView(
 
 ---
 
+#### `Views/Components/SearchBar.swift` (NEW - Phase 3)
+**Scope**: Reusable search bar component  
+**Responsibility**:
+- Text input for searching
+- Search icon indicator
+- Clear button when text present
+- iOS standard design
+
+**Boundaries**:
+- ✅ Search input UI
+- ✅ Clear functionality
+- ❌ No search logic (parent handles)
+
+**UI Elements**:
+- Magnifying glass icon (left)
+- TextField (center)
+- X circle button (right, when text present)
+- Gray background (#systemGray6)
+- 10pt corner radius
+
+**Usage**:
+```swift
+SearchBar(text: $searchText, placeholder: "Search passages...")
+```
+
+---
+
+#### `Views/Components/FilterChip.swift` (NEW - Phase 3)
+**Scope**: Reusable filter chip/tag component  
+**Responsibility**:
+- Display filter option
+- Show selected/unselected state
+- Handle tap interaction
+- Consistent chip styling
+
+**Boundaries**:
+- ✅ Chip UI with selection state
+- ✅ Icon + text layout
+- ❌ No filter logic (parent handles)
+
+**UI Elements**:
+- HStack with optional icon + text
+- Rounded pill shape (20pt radius)
+- Selected: Accent color background, white text
+- Unselected: Gray background, primary text
+
+**Usage**:
+```swift
+FilterChip(
+    title: "Completed",
+    systemImage: "checkmark.circle.fill",
+    isSelected: true,
+    action: { /* toggle filter */ }
+)
+```
+
+---
+
+#### `Views/Components/EmptyStateView.swift` (NEW - Phase 3)
+**Scope**: Reusable empty state component  
+**Responsibility**:
+- Show icon + message when no content
+- Provide clear feedback
+- Consistent empty state design
+
+**Boundaries**:
+- ✅ Empty state UI
+- ✅ Icon + title + message layout
+- ❌ No retry/action buttons (can be added)
+
+**UI Elements**:
+- Large SF Symbol icon (48pt)
+- Title text (primary)
+- Message text (secondary)
+- Centered layout
+
+**Usage**:
+```swift
+EmptyStateView(
+    icon: "magnifyingglass",
+    title: "No passages found",
+    message: "Try adjusting your filters"
+)
+```
+
+---
+
+#### `Views/Components/TagFilterSheet.swift` (NEW - Phase 3)
+**Scope**: Tag selection sheet  
+**Responsibility**:
+- Display all available tags
+- Multi-select functionality
+- Clear selected tags
+- Show AND logic hint
+
+**Boundaries**:
+- ✅ Tag selection UI
+- ✅ Multi-select state management
+- ❌ No tag creation
+
+**UI Elements**:
+- NavigationStack with list
+- Checkmark for selected tags
+- "Clear" button (toolbar, left)
+- "Done" button (toolbar, right)
+- Footer hint for AND logic
+- Medium/Large presentation detents
+
+**State Management**:
+- Receives `availableTags: [String]` as input
+- Receives `@Binding var selectedTags: Set<String>` for two-way binding
+
+**Usage**:
+```swift
+.sheet(isPresented: $showSheet) {
+    TagFilterSheet(
+        availableTags: ["travel", "food", "culture"],
+        selectedTags: $selectedTags
+    )
+}
+```
+
+---
+
 #### `Views/PlaceholderTabView.swift`
 **Scope**: Placeholder for unimplemented tabs  
 **Responsibility**:
@@ -1206,5 +1429,5 @@ SomeView()
 ---
 
 **Last Updated**: December 13, 2025  
-**Version**: 2.0.1 (Critical fixes: Per-level statistics aggregation)
+**Version**: 2.1.0 (Phase 3: Search, filtering, and sorting)
 
