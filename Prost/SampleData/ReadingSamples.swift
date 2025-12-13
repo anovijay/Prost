@@ -48,11 +48,112 @@ extension ReadingPassage {
             Am Abend trifft sie eine Freundin in einem kleinen Restaurant. Sie sprechen lange und lachen viel. Spät am Abend fährt Lena müde,
             aber glücklich ins Hotel zurück.
             """,
-            questions: [q1, q2, q3]
+            questions: [q1, q2, q3],
+            tags: ["travel", "daily-life", "food", "culture"]
         )
     }
 }
 
+// MARK: - User Samples
+
+extension User {
+    static var sampleUser: User {
+        User(
+            id: UUID(uuidString: "00000000-0000-0000-0000-000000000001")!,
+            name: "Demo User",
+            email: "demo@prost.app",
+            createdAt: Date(timeIntervalSinceNow: -30 * 24 * 60 * 60) // 30 days ago
+        )
+    }
+}
+
+// MARK: - Passage Completion Samples
+
+extension PassageCompletion {
+    static var sampleCompletions: [PassageCompletion] {
+        let userId = User.sampleUser.id
+        let passageId = ReadingPassage.sampleBerlinDay.id
+        
+        return [
+            // First attempt - not perfect
+            PassageCompletion(
+                userId: userId,
+                passageId: passageId,
+                score: 0.67,
+                completedAt: Date(timeIntervalSinceNow: -5 * 24 * 60 * 60), // 5 days ago
+                attemptNumber: 1
+            ),
+            // Second attempt - improved
+            PassageCompletion(
+                userId: userId,
+                passageId: passageId,
+                score: 1.0,
+                completedAt: Date(timeIntervalSinceNow: -2 * 24 * 60 * 60), // 2 days ago
+                attemptNumber: 2
+            )
+        ]
+    }
+}
+
+// MARK: - User Progress Samples
+
+extension UserProgress {
+    static var sampleProgress: [UserProgress] {
+        let userId = User.sampleUser.id
+        let passageId = ReadingPassage.sampleBerlinDay.id
+        
+        return [
+            // A1 - Completed level
+            UserProgress(
+                userId: userId,
+                level: "A1",
+                completedPassageIds: Array(repeating: UUID(), count: 10),
+                totalAttempts: 15,
+                averageScore: 0.65,
+                bestScore: 0.90,
+                latestScore: 0.70,
+                lastActivityAt: Date(timeIntervalSinceNow: -10 * 24 * 60 * 60) // 10 days ago
+            ),
+            // A2 - Current level (includes sample passage)
+            UserProgress(
+                userId: userId,
+                level: "A2",
+                completedPassageIds: [passageId] + Array(repeating: UUID(), count: 4),
+                totalAttempts: 7,
+                averageScore: 0.58,
+                bestScore: 1.0,
+                latestScore: 1.0,
+                lastActivityAt: Date(timeIntervalSinceNow: -2 * 24 * 60 * 60) // 2 days ago
+            ),
+            // B1 - Not started
+            UserProgress(
+                userId: userId,
+                level: "B1",
+                completedPassageIds: [],
+                totalAttempts: 0,
+                averageScore: 0.0,
+                bestScore: 0.0,
+                latestScore: 0.0,
+                lastActivityAt: Date()
+            ),
+            // B2 - Not started
+            UserProgress(
+                userId: userId,
+                level: "B2",
+                completedPassageIds: [],
+                totalAttempts: 0,
+                averageScore: 0.0,
+                bestScore: 0.0,
+                latestScore: 0.0,
+                lastActivityAt: Date()
+            )
+        ]
+    }
+}
+
+// MARK: - Legacy (Deprecated)
+
+@available(*, deprecated, message: "Use UserProgress.sampleProgress instead")
 extension LevelProgress {
     static var sampleLevels: [LevelProgress] {
         [
