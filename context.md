@@ -120,38 +120,67 @@ Prost/
 
 **Models Defined**:
 
-1. **`ReadingPassage`**
-   - Represents a German text passage with questions
-   - Properties: id, title, level, text, questions[]
-   - Conforms to: Identifiable, Hashable
+1. **`User`**
+   - Represents app user identity
+   - Properties: id, name, email, createdAt
+   - Conforms to: Identifiable, Codable, Hashable
+   - Purpose: Track user for completion and progress data
 
-2. **`ReadingQuestion`**
+2. **`ReadingPassage`**
+   - Represents a German text passage with questions
+   - Properties: id, title, level, text, questions[], tags[]
+   - New: tags[] - lowercase, hyphenated strings for search (e.g., ["travel", "daily-life"])
+   - Conforms to: Identifiable, Codable, Hashable
+   - Purpose: Content structure for reading comprehension
+
+3. **`ReadingQuestion`**
    - Represents a single comprehension question
    - Properties: id, prompt, options[], correctOptionID
    - Methods: `isCorrect(selectedOptionID:)` - validates answer
-   - Conforms to: Identifiable, Hashable
+   - Conforms to: Identifiable, Codable, Hashable
 
-3. **`ReadingOption`**
+4. **`ReadingOption`**
    - Represents a multiple-choice option
    - Properties: id, text
-   - Conforms to: Identifiable, Hashable
+   - Conforms to: Identifiable, Codable, Hashable
 
-4. **`ReadingQuestionResult`**
+5. **`ReadingQuestionResult`**
    - Encapsulates user's answer and correctness
    - Properties: id, question, selectedOptionID
    - Computed: isCorrect, selectedOptionText, correctOptionText
    - Conforms to: Identifiable, Hashable
+   - Purpose: Result calculation (not persisted)
 
-5. **`LevelProgress`**
-   - Tracks user progress for a CEFR level (A1, A2, etc.)
-   - Properties: id, level, passagesCompleted, overallScore
-   - Conforms to: Identifiable
+6. **`PassageCompletion`**
+   - Tracks individual passage completion attempts
+   - Properties: id, userId, passageId, score, completedAt, attemptNumber
+   - Computed: scorePercentage (0-100), isPerfect (score == 1.0)
+   - Conforms to: Identifiable, Codable, Hashable
+   - Purpose: Record each quiz submission with metadata
+
+7. **`UserProgress`**
+   - Aggregates user performance per level
+   - Properties: userId, level, completedPassageIds[], totalAttempts, averageScore, bestScore, latestScore, lastActivityAt
+   - Computed: completedCount, averageScorePercentage, bestScorePercentage, latestScorePercentage
+   - Conforms to: Identifiable, Codable, Hashable
+   - Purpose: Dashboard statistics and progress tracking
+
+8. **`LevelProgress`** (Deprecated)
+   - Legacy model, replaced by UserProgress
+   - Marked with @available(*, deprecated)
+   - Kept for backward compatibility during migration
 
 **Business Rules**:
 - Each passage belongs to exactly one level (A1, A2, B1, B2, C1, C2)
 - Each question has exactly one correct answer
-- Score is calculated as: (correct answers / total questions) * 100
+- Score is calculated as: (correct answers / total questions), stored as 0.0-1.0
+- Score displayed as percentage (0-100%)
 - Questions must have at least 2 options (enforced by UI, not model)
+- **Completion tracking**: Auto-complete on submit OR manual "Mark as Complete"
+- **Attempt tracking**: Each retake increments attemptNumber (1, 2, 3, ...)
+- **Score aggregation**: averageScore = mean of all completions, bestScore = max score
+- **Tags**: lowercase, hyphenated, for backend search filtering (not user-facing)
+- **Tag search**: AND logic (passage must have all searched tags)
 
 **Dependencies**: Foundation
 
@@ -174,23 +203,44 @@ Prost/
 
 **Extensions Provided**:
 
-1. **`ReadingPassage.sampleBerlinDay`**
+1. **`User.sampleUser`**
+   - Demo user for prototype testing
+   - ID: Fixed UUID for consistency across app
+   - Name: "Demo User", Email: "demo@prost.app"
+   - Created 30 days ago
+
+2. **`ReadingPassage.sampleBerlinDay`**
    - A2-level passage about Lena's day in Berlin
    - 3 comprehension questions with 3 options each
-   - Demonstrates proper model structure
+   - **New**: Tags: ["travel", "daily-life", "food", "culture"]
+   - Demonstrates proper model structure with search tags
 
-2. **`LevelProgress.sampleLevels`**
-   - Array of 4 levels (A1, A2, B1, B2)
-   - Shows varying completion states
-   - A1: 10 passages, 65% score (active user)
-   - A2: 5 passages, 58% score (current level)
-   - B1/B2: Not started
+3. **`PassageCompletion.sampleCompletions`**
+   - 2 completion records for sample passage
+   - Attempt 1: 67% score, 5 days ago
+   - Attempt 2: 100% score (perfect), 2 days ago
+   - Shows progression over attempts
+
+4. **`UserProgress.sampleProgress`**
+   - Array of 4 levels (A1, A2, B1, B2) with aggregated data
+   - A1: 10 passages completed, avg 65%, best 90%, latest 70%
+   - A2: 5 passages completed, avg 58%, best 100%, latest 100%
+   - B1/B2: Not started (0 passages, 0 attempts)
+   - Includes sample passage in A2 completed passages
+
+5. **`LevelProgress.sampleLevels`** (Deprecated)
+   - Legacy sample data, replaced by UserProgress.sampleProgress
+   - Marked with @available(*, deprecated)
+   - Kept for backward compatibility
 
 **Business Rules**:
 - Sample passages must follow CEFR level guidelines
 - Questions must be answerable from passage content
 - Exactly one correct answer per question
 - Score percentages should be realistic (40-100%)
+- **Tags**: Use common categories (travel, food, work, daily-life, culture, family, hobbies)
+- **Completion history**: Show realistic attempt progression (improving scores)
+- **User consistency**: Use same user ID across all sample data
 
 **Future Enhancement**: Replace with API calls to backend
 
@@ -823,5 +873,5 @@ SomeView()
 ---
 
 **Last Updated**: December 13, 2025  
-**Version**: 1.0.0 (Initial Prototype)
+**Version**: 1.1.0 (Added completion tracking and search tags)
 
