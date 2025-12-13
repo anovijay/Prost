@@ -257,6 +257,202 @@ Prost/
 
 ---
 
+### Services Layer
+
+#### `Services/CompletionService.swift`
+**Scope**: Business logic for passage completions and progress aggregation  
+**Responsibility**:
+- Create PassageCompletion records
+- Calculate attempt numbers for passages
+- Update UserProgress after completions
+- Aggregate scores (average, best, latest)
+- Provide completion history
+- Compare scores across attempts
+
+**Boundaries**:
+- ✅ Pure business logic (no UI)
+- ✅ Score calculations
+- ✅ Attempt tracking
+- ✅ Progress aggregation
+- ❌ No state management
+- ❌ No persistence (operates on passed data)
+- ❌ No navigation
+
+**Public Methods**:
+
+1. **`createCompletion(userId:passageId:score:attemptNumber:)`**
+   - Creates a new PassageCompletion record
+   - Validates score (clamped to 0.0-1.0)
+   - Validates attempt number (minimum 1)
+   - Returns: PassageCompletion
+
+2. **`calculateAttemptNumber(userId:passageId:existingCompletions:)`**
+   - Counts existing completions for user + passage
+   - Returns: next attempt number (1, 2, 3, ...)
+
+3. **`updateProgress(currentProgress:newCompletion:allCompletions:)`**
+   - Adds passage to completedPassageIds (if new)
+   - Increments totalAttempts
+   - Recalculates averageScore (mean of all attempts)
+   - Updates bestScore (max score)
+   - Updates latestScore (new completion score)
+   - Sets lastActivityAt to now
+   - Returns: Updated UserProgress
+
+4. **`getCompletionHistory(userId:passageId:allCompletions:)`**
+   - Filters completions for user + passage
+   - Sorts by completedAt (oldest first)
+   - Returns: [PassageCompletion]
+
+5. **`getLatestCompletion(userId:passageId:allCompletions:)`**
+   - Gets most recent completion
+   - Returns: PassageCompletion?
+
+6. **`isCompleted(userId:passageId:allCompletions:)`**
+   - Checks if user has completed passage at least once
+   - Returns: Bool
+
+7. **`getScoreComparison(newScore:previousCompletions:)`**
+   - Compares new score with previous attempts
+   - Returns: ScoreComparison enum
+
+**ScoreComparison Enum**:
+- `.firstAttempt`: No previous attempts
+- `.improved(from:to:)`: Score increased by >1%
+- `.decreased(from:to:)`: Score decreased by >1%
+- `.same(_)`: Score within 1% of previous
+- Provides `.message` property with user-friendly text
+
+**Business Rules**:
+- Score automatically clamped to 0.0-1.0 range
+- Attempt numbers start at 1 and increment per passage
+- Average score = mean of ALL attempts (not per passage)
+- Best score = highest score across all attempts
+- Latest score = most recent completion
+- Score comparison uses 1% threshold to avoid noise
+- Celebration emoji (🎉) on improvements
+
+**Usage Example**:
+```swift
+// Calculate next attempt
+let attemptNum = CompletionService.calculateAttemptNumber(
+    userId: user.id,
+    passageId: passage.id,
+    existingCompletions: allCompletions
+)
+
+// Create completion
+let completion = CompletionService.createCompletion(
+    userId: user.id,
+    passageId: passage.id,
+    score: 0.67,
+    attemptNumber: attemptNum
+)
+
+// Update progress
+let newProgress = CompletionService.updateProgress(
+    currentProgress: currentProgress,
+    newCompletion: completion,
+    allCompletions: allCompletions
+)
+```
+
+**Dependencies**:
+- ReadingModels.swift (PassageCompletion, UserProgress)
+- Foundation (UUID, Date)
+
+**Architecture Notes**:
+- Stateless service (all functions are static)
+- Operates on passed data (doesn't manage state)
+- Pure functions (no side effects)
+- Easily testable
+- Can be replaced with API calls in future
+
+---
+
+### ViewModels Layer
+
+#### `ViewModels/AppState.swift`
+**Scope**: App-wide state management (temporary, in-memory)  
+**Responsibility**:
+- Manage current user
+- Store all PassageCompletions
+- Store all UserProgress records
+- Provide convenient access methods
+- Coordinate with CompletionService
+
+**Boundaries**:
+- ✅ ObservableObject for SwiftUI
+- ✅ In-memory storage
+- ✅ Convenience methods
+- ❌ No UI logic
+- ❌ No persistence (Phase 4)
+- ❌ No network calls
+
+**Published Properties**:
+- `currentUser: User` - Currently logged-in user (sample data)
+- `completions: [PassageCompletion]` - All completion records
+- `userProgress: [UserProgress]` - Progress for each level
+
+**Public Methods**:
+
+1. **`addCompletion(_:for:)`**
+   - Adds completion to list
+   - Updates relevant UserProgress
+   - Uses CompletionService for calculations
+
+2. **`getCompletionHistory(for:)`**
+   - Returns completion history for passage
+   - Delegates to CompletionService
+
+3. **`isCompleted(_:)`**
+   - Checks if passage completed
+   - Delegates to CompletionService
+
+4. **`getNextAttemptNumber(for:)`**
+   - Gets next attempt number for passage
+   - Delegates to CompletionService
+
+5. **`getProgress(for:)`**
+   - Returns UserProgress for specific level
+   - Returns: UserProgress?
+
+**Initialization**:
+- Defaults to sample data (User.sampleUser, etc.)
+- Can be injected with different data for testing
+
+**Environment Injection**:
+```swift
+// In ProstApp.swift
+@StateObject private var appState = AppState()
+
+ContentView()
+    .environmentObject(appState)
+
+// In views
+@EnvironmentObject private var appState: AppState
+```
+
+**Business Rules**:
+- State resets on app restart (no persistence yet)
+- All completions stored in single array
+- Progress updated immediately after completion
+- Current user never changes (single-user app for now)
+
+**Future Migration** (Phase 4):
+- Replace with Core Data models
+- Add UserDefaults for current user
+- Add offline sync
+- Add authentication
+
+**Dependencies**:
+- ReadingModels.swift (User, PassageCompletion, UserProgress, ReadingPassage)
+- CompletionService.swift (business logic)
+- Foundation (UUID)
+- SwiftUI (ObservableObject, Published)
+
+---
+
 ### Views Layer - Reading Feature
 
 #### `Views/Reading/ReadingDashboardView.swift`
@@ -264,26 +460,35 @@ Prost/
 **Responsibility**:
 - Display all CEFR levels (A1, A2, B1, B2) with progress
 - Navigate to level-specific passage list
-- Show completion status and scores
+- Show completion status and scores (latest + best)
+- Reflect real-time progress updates
 
 **Boundaries**:
 - ✅ Level grid/list layout
 - ✅ Navigation to LevelPassagesView
+- ✅ Uses AppState for dynamic data
 - ❌ No question logic
 - ❌ No score calculation (uses model)
 
 **Business Rules**:
 - Display exactly 4 levels: A1, A2, B1, B2
 - Show "Not started" for levels with 0 completed passages
-- Show "X passages completed" and "Overall score: Y%" for active levels
+- Show "X passages completed", "Latest: Y%", "Best: Z%" for active levels
 - Levels are always displayed in order: A1 → A2 → B1 → B2
+- Progress updates automatically when user completes passages
+
+**State Management**:
+- `@EnvironmentObject appState: AppState` - Reads userProgress array
+- Reactive to state changes (completions update dashboard)
 
 **UI Elements**:
 - NavigationStack with title "Reading"
 - ScrollView with level cards
 - Each card is a NavigationLink to LevelPassagesView
+- Cards show latest + best scores side-by-side
 
 **Dependencies**:
+- AppState (data source)
 - LevelProgressCard.swift (component)
 - LevelPassagesView.swift (navigation target)
 - ProstTheme (styling)
@@ -293,14 +498,18 @@ Prost/
 ---
 
 #### `Views/Reading/LevelPassagesView.swift`
-**Scope**: List of passages for a specific level  
+**Scope**: List of passages for a specific level with completion status  
 **Responsibility**:
 - Display all passages available for the selected level
+- **Show completion status for each passage**
+- **Display attempt count and best score**
 - Navigate to individual passage reading view
 - Show passage metadata (title, question count)
 
 **Boundaries**:
 - ✅ Passage list for one level
+- ✅ Completion badges and scores
+- ✅ Attempt count display
 - ✅ Navigation to ReadingPassageView
 - ❌ No passage content display
 - ❌ No question logic
@@ -308,19 +517,37 @@ Prost/
 **Business Rules**:
 - Display passages for the selected level only
 - Show passage title and question count
+- **Show completion indicators**:
+  - Empty circle: Not started
+  - Checkmark + best score: Completed
+  - Star icon: Perfect score (100%)
+  - Attempt count: "2 attempts"
+- **Best score displayed prominently** (e.g., "100%")
 - Currently shows sample data (1 passage per level)
 - Future: Load passages dynamically from backend
 
 **UI Elements**:
 - NavigationStack with level as title (e.g., "A2")
-- ScrollView with passage cards
+- ScrollView with enhanced passage cards
+- Each card shows:
+  - Title and question count
+  - Attempt count (if completed)
+  - Best score percentage (if completed)
+  - Completion checkmark (if completed)
+  - Perfect score star (if 100%)
 - Each card is a NavigationLink to ReadingPassageView
 
 **State Management**:
-- Receives `levelProgress: LevelProgress` as input
-- Stateless (no @State properties)
+- `@EnvironmentObject appState: AppState` - reads completion history
+- Receives `progress: UserProgress` as input
+- Computed: `passageCompletionInfo` - aggregates completion data per passage
+
+**Supporting Types**:
+- `PassageCompletionInfo` - holds attemptCount and bestScore
+- `PassageCardView` - reusable card component with completion info
 
 **Dependencies**:
+- AppState (completion history)
 - ReadingPassageView.swift (navigation target)
 - ProstTheme (styling)
 - ReadingModels.swift (data)
@@ -329,15 +556,20 @@ Prost/
 ---
 
 #### `Views/Reading/ReadingPassageView.swift`
-**Scope**: Display German text passage for reading  
+**Scope**: Display German text passage for reading with completion options  
 **Responsibility**:
 - Show full passage text
 - Enable text selection for studying
 - Navigate to questions when user is ready
+- **Allow manual completion (without answering questions)**
+- Show completion status badge if already completed
 
 **Boundaries**:
 - ✅ Passage text display
-- ✅ "Continue to Questions" CTA
+- ✅ "Continue to Questions" CTA (primary)
+- ✅ "Mark as Complete" CTA (secondary)
+- ✅ Completion badge display
+- ✅ Manual completion logic
 - ❌ No question display
 - ❌ No answer collection
 
@@ -345,21 +577,40 @@ Prost/
 - User must read passage before answering questions (enforced by flow)
 - Text is selectable for translation/study
 - Level indicator shown in navigation bar
-- Bottom CTA button is always visible (safeAreaInset)
+- Bottom CTA buttons always visible (safeAreaInset)
+- **Manual completion creates record with perfect score (1.0)**
+- **"Mark as Complete" button hidden if already completed**
+- **Completion confirmation alert before manual complete**
+- **Success message after manual completion**
+- Completion badge shown at top if passage already completed
 
 **UI Elements**:
 - ScrollView with passage text in card
-- Fixed bottom button: "Continue to Questions"
+- Completion badge (if completed): green with checkmark icon
+- Fixed bottom buttons:
+  - Primary: "Continue to Questions" (always visible)
+  - Secondary: "Mark as Complete" (only if not completed)
 - Navigation title: Level (e.g., "A2")
+- Confirmation alert for manual completion
+- Success alert after completion
 
 **State Management**:
+- `@EnvironmentObject appState: AppState` - checks/updates completion status
 - `@State private var goToQuestions: Bool` - triggers navigation
+- `@State private var showManualCompleteConfirmation: Bool` - shows alert
+- `@State private var showSuccessMessage: Bool` - shows success alert
+- Computed: `isAlreadyCompleted` - checks appState
 - Receives `passage: ReadingPassage` as input
+
+**Actions**:
+- `markAsComplete()` - creates completion with score 1.0, updates appState
 
 **Navigation Flow**:
 ReadingPassageView → ReadingQuestionsView
 
 **Dependencies**:
+- AppState (completion status + updates)
+- CompletionService (create completion)
 - ReadingQuestionsView.swift (navigation target)
 - ProstTheme (styling)
 - ReadingModels.swift (data)
@@ -367,18 +618,22 @@ ReadingPassageView → ReadingQuestionsView
 ---
 
 #### `Views/Reading/ReadingQuestionsView.swift`
-**Scope**: Multiple-choice question answering interface  
+**Scope**: Multiple-choice question answering interface with auto-completion  
 **Responsibility**:
 - Display all questions for the passage
 - Collect user's answer selections
 - Validate all questions are answered
-- Navigate to results when submitted
+- **Calculate score and create completion record**
+- **Update user progress automatically**
+- Navigate to results with completion data
 
 **Boundaries**:
 - ✅ Question display and answer collection
 - ✅ Validation (all answered)
 - ✅ Result generation
-- ❌ No scoring logic (delegated to model)
+- ✅ Score calculation
+- ✅ Completion creation
+- ✅ Progress updates
 - ❌ No result display
 
 **Business Rules**:
@@ -386,6 +641,10 @@ ReadingPassageView → ReadingQuestionsView
 - Only one option can be selected per question
 - Submit button disabled until all answered
 - Button text updates dynamically: "Answer all questions (X left)" or "Submit Answers"
+- **Score calculated as: correctCount / totalQuestions**
+- **Completion created automatically on submit**
+- **Attempt number calculated from existing completions**
+- **Progress updated before navigation to results**
 
 **UI Elements**:
 - ScrollView with question cards
@@ -393,20 +652,35 @@ ReadingPassageView → ReadingQuestionsView
 - Navigation title: Level (e.g., "A2")
 
 **State Management**:
+- `@EnvironmentObject appState: AppState` - creates completion, updates progress
 - `@State private var selectedOptionByQuestionID: [UUID: UUID]` - tracks selections
 - `@State private var showResults: Bool` - triggers navigation
-- Computed: `results`, `unansweredCount`
+- `@State private var currentCompletion: PassageCompletion?` - stores completion for results
+- Computed: `results`, `unansweredCount`, `score`
 - Receives `passage: ReadingPassage` as input
+
+**Actions**:
+- `submitAnswers()` - calculates score, creates completion, updates appState, navigates
 
 **Business Logic**:
 ```swift
-// Generate results
-results = passage.questions.map { q in
-    ReadingQuestionResult(
-        question: q,
-        selectedOptionID: selectedOptionByQuestionID[q.id]
-    )
-}
+// Calculate score
+let correctCount = results.filter { $0.isCorrect }.count
+let score = Double(correctCount) / Double(passage.questions.count)
+
+// Get attempt number
+let attemptNumber = appState.getNextAttemptNumber(for: passage.id)
+
+// Create completion
+let completion = CompletionService.createCompletion(
+    userId: appState.currentUser.id,
+    passageId: passage.id,
+    score: score,
+    attemptNumber: attemptNumber
+)
+
+// Update app state
+appState.addCompletion(completion, for: passage)
 
 // Check completion
 unansweredCount = results.filter { $0.selectedOptionID == nil }.count
@@ -424,23 +698,43 @@ ReadingQuestionsView → ReadingResultsView
 ---
 
 #### `Views/Reading/ReadingResultsView.swift`
-**Scope**: Display quiz results and review wrong answers  
+**Scope**: Display quiz results, attempt history, and review wrong answers  
 **Responsibility**:
+- **Show attempt number badge**
 - Show overall score (percentage and fraction)
+- **Display score comparison with previous attempts**
+- **Show expandable attempt history**
 - Display only wrong answers for review
 - Show user's answer vs. correct answer
+- **Celebrate perfect scores**
 - Allow retaking the quiz
 
 **Boundaries**:
-- ✅ Score display
+- ✅ Score display with comparison
+- ✅ Attempt history display
 - ✅ Wrong answer review
 - ✅ Retake functionality
+- ✅ Perfect score celebration
 - ❌ No answer collection
-- ❌ No score calculation (uses model)
+- ❌ No score calculation (received from parent)
 
 **Business Rules**:
-- Display score as percentage: (correct / total) × 100
+- Display score as percentage from completion record
+- **Show attempt number at top** ("Attempt #2")
+- **Compare score with previous attempts**:
+  - First attempt: "First attempt complete!"
+  - Improved: "Improved from 67% to 100%! 🎉"
+  - Decreased: "Score: 67% (previous: 100%)"
+  - Same: "Score: 67% (same as before)"
+- **Show history button if multiple attempts** (expandable)
+- **History shows all attempts** with:
+  - Attempt number
+  - Date (relative: "2 days ago")
+  - Score percentage
+  - Star icon for perfect scores
+  - Highlight current attempt
 - Only show wrong answers in review section
+- **If perfect score**: Show celebration message instead of review
 - Each wrong answer shows:
   - Question text
   - ❌ User's (wrong) answer
@@ -448,30 +742,49 @@ ReadingQuestionsView → ReadingResultsView
 - Retake button resets state and navigates back to questions
 
 **UI Elements**:
-- ScrollView with score card at top
+- Attempt badge at top (blue with number icon)
+- "History" toggle button (if multiple attempts)
+- Expandable history section (if toggled)
+- ScrollView with score card
+- Score comparison message (color-coded):
+  - Green for improvements
+  - Orange for decreased
+  - Primary for first/same
 - "Review" section with wrong answer cards
+- **Perfect score celebration** (yellow banner with star)
 - Fixed bottom "Retake" button
 - Navigation title: Level (e.g., "A2")
 
 **State Management**:
+- `@EnvironmentObject appState: AppState` - reads completion history
+- `@State private var showHistory: Bool` - toggles history display
 - Receives `passage: ReadingPassage` as input
 - Receives `results: [ReadingQuestionResult]` as input
+- **Receives `completion: PassageCompletion` as input**
 - Receives `onRetake: () -> Void` closure for reset
-- Computed: `correctCount`, `wrongResults`, `scorePercentage`
+- Computed: `correctCount`, `wrongResults`, `scorePercentage`, `completionHistory`, `previousCompletions`, `scoreComparison`
 
 **Business Logic**:
 ```swift
-// Calculate score
-scorePercentage = Int((Double(correctCount) / Double(results.count)) * 100)
+// Get completion history
+completionHistory = appState.getCompletionHistory(for: passage.id)
 
-// Filter wrong answers
-wrongResults = results.filter { !$0.isCorrect }
+// Get previous completions (excluding current)
+previousCompletions = completionHistory.filter { $0.id != completion.id }
+
+// Get score comparison
+scoreComparison = CompletionService.getScoreComparison(
+    newScore: completion.score,
+    previousCompletions: previousCompletions
+)
 ```
 
 **Navigation Flow**:
 - Retake → Dismisses back to ReadingQuestionsView (with reset state)
 
 **Dependencies**:
+- AppState (completion history)
+- CompletionService (score comparison)
 - ProstTheme (styling)
 - ReadingModels.swift (data)
 
@@ -886,5 +1199,5 @@ SomeView()
 ---
 
 **Last Updated**: December 13, 2025  
-**Version**: 1.2.0 (Critical issues fixed: validation, UUID linking, UI updated)
+**Version**: 2.0.0 (Phase 2: Completion tracking UI implemented)
 

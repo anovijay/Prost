@@ -8,13 +8,13 @@
 import SwiftUI
 
 struct ReadingDashboardView: View {
-    let progress: [UserProgress] = UserProgress.sampleProgress
+    @EnvironmentObject private var appState: AppState
     
     var body: some View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
-                    ForEach(progress) { userProgress in
+                    ForEach(appState.userProgress) { userProgress in
                         NavigationLink {
                             LevelPassagesView(progress: userProgress)
                         } label: {

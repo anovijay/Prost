@@ -9,9 +9,11 @@ import SwiftUI
 
 struct ReadingQuestionsView: View {
     let passage: ReadingPassage
-
+    
+    @EnvironmentObject private var appState: AppState
     @State private var selectedOptionByQuestionID: [UUID: UUID] = [:]
     @State private var showResults = false
+    @State private var currentCompletion: PassageCompletion?
 
     private var results: [ReadingQuestionResult] {
         passage.questions.map { q in
@@ -21,6 +23,11 @@ struct ReadingQuestionsView: View {
 
     private var unansweredCount: Int {
         results.filter { $0.selectedOptionID == nil }.count
+    }
+    
+    private var score: Double {
+        let correctCount = results.filter { $0.isCorrect }.count
+        return Double(correctCount) / Double(passage.questions.count)
     }
 
     var body: some View {
@@ -46,7 +53,7 @@ struct ReadingQuestionsView: View {
         .prostBackground()
         .safeAreaInset(edge: .bottom) {
             Button {
-                showResults = true
+                submitAnswers()
             } label: {
                 Text(unansweredCount > 0 ? "Answer all questions (\(unansweredCount) left)" : "Submit Answers")
                     .font(ProstTheme.Typography.title)
@@ -59,14 +66,35 @@ struct ReadingQuestionsView: View {
             .background(.ultraThinMaterial)
         }
         .navigationDestination(isPresented: $showResults) {
-            ReadingResultsView(
-                passage: passage,
-                results: results,
-                onRetake: {
-                    selectedOptionByQuestionID = [:]
-                    showResults = false
-                }
-            )
+            if let completion = currentCompletion {
+                ReadingResultsView(
+                    passage: passage,
+                    results: results,
+                    completion: completion,
+                    onRetake: {
+                        selectedOptionByQuestionID = [:]
+                        currentCompletion = nil
+                        showResults = false
+                    }
+                )
+            }
         }
+    }
+    
+    // MARK: - Actions
+    
+    private func submitAnswers() {
+        let attemptNumber = appState.getNextAttemptNumber(for: passage.id)
+        
+        let completion = CompletionService.createCompletion(
+            userId: appState.currentUser.id,
+            passageId: passage.id,
+            score: score,
+            attemptNumber: attemptNumber
+        )
+        
+        appState.addCompletion(completion, for: passage)
+        currentCompletion = completion
+        showResults = true
     }
 }

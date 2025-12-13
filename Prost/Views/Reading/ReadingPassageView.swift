@@ -9,12 +9,35 @@ import SwiftUI
 
 struct ReadingPassageView: View {
     let passage: ReadingPassage
-
+    
+    @EnvironmentObject private var appState: AppState
     @State private var goToQuestions = false
+    @State private var showManualCompleteConfirmation = false
+    @State private var showSuccessMessage = false
+    
+    private var isAlreadyCompleted: Bool {
+        appState.isCompleted(passage.id)
+    }
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
+                // Completion badge if already completed
+                if isAlreadyCompleted {
+                    HStack {
+                        Image(systemName: "checkmark.circle.fill")
+                            .foregroundStyle(.green)
+                        Text("Completed")
+                            .font(ProstTheme.Typography.caption.weight(.medium))
+                            .foregroundStyle(.secondary)
+                        Spacer()
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 8)
+                    .background(Color.green.opacity(0.1))
+                    .cornerRadius(8)
+                }
+                
                 Text(passage.text)
                     .font(ProstTheme.Typography.body)
                     .foregroundStyle(.primary)
@@ -27,15 +50,31 @@ struct ReadingPassageView: View {
             .padding(ProstTheme.Spacing.screenPadding)
         }
         .safeAreaInset(edge: .bottom) {
-            Button {
-                goToQuestions = true
-            } label: {
-                Text("Continue to Questions")
-                    .font(ProstTheme.Typography.title)
-                    .frame(maxWidth: .infinity)
-                    .padding(16)
+            VStack(spacing: 12) {
+                // Primary action: Continue to questions
+                Button {
+                    goToQuestions = true
+                } label: {
+                    Text("Continue to Questions")
+                        .font(ProstTheme.Typography.title)
+                        .frame(maxWidth: .infinity)
+                        .padding(16)
+                }
+                .buttonStyle(.borderedProminent)
+                
+                // Secondary action: Mark as complete
+                if !isAlreadyCompleted {
+                    Button {
+                        showManualCompleteConfirmation = true
+                    } label: {
+                        Text("Mark as Complete")
+                            .font(ProstTheme.Typography.body)
+                            .frame(maxWidth: .infinity)
+                            .padding(12)
+                    }
+                    .buttonStyle(.bordered)
+                }
             }
-            .buttonStyle(.borderedProminent)
             .padding(ProstTheme.Spacing.screenPadding)
             .background(.ultraThinMaterial)
         }
@@ -45,5 +84,34 @@ struct ReadingPassageView: View {
         .navigationDestination(isPresented: $goToQuestions) {
             ReadingQuestionsView(passage: passage)
         }
+        .alert("Mark as Complete?", isPresented: $showManualCompleteConfirmation) {
+            Button("Cancel", role: .cancel) { }
+            Button("Complete") {
+                markAsComplete()
+            }
+        } message: {
+            Text("This will mark the passage as completed without answering questions (perfect score).")
+        }
+        .alert("Completed!", isPresented: $showSuccessMessage) {
+            Button("OK", role: .cancel) { }
+        } message: {
+            Text("Passage marked as complete with perfect score!")
+        }
+    }
+    
+    // MARK: - Actions
+    
+    private func markAsComplete() {
+        let attemptNumber = appState.getNextAttemptNumber(for: passage.id)
+        
+        let completion = CompletionService.createCompletion(
+            userId: appState.currentUser.id,
+            passageId: passage.id,
+            score: 1.0,  // Perfect score for manual completion
+            attemptNumber: attemptNumber
+        )
+        
+        appState.addCompletion(completion, for: passage)
+        showSuccessMessage = true
     }
 }
