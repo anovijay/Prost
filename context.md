@@ -181,6 +181,86 @@ Prost/
    - Conforms to: Codable, Equatable
    - Purpose: Centralize all filtering state in one model
 
+---
+
+### Goethe A1 Exam Models (New File)
+
+#### `Models/GoetheA1ReadingModels.swift` (NEW - Goethe Format)
+**Scope**: Official Goethe-Zertifikat A1 Reading exam structure  
+**Purpose**: Support the 3-part Goethe A1 Reading format (15 questions, 25 minutes)
+
+**Models (10 total)**:
+
+1. **`GoetheQuestionType`** (Enum)
+   - `.trueFalse`: Richtig/Falsch questions (Parts 1 & 3)
+   - `.binaryChoice`: A/B selection questions (Part 2)
+   - `.multipleChoice`: Future expansion for other formats
+
+2. **`GoetheA1Option`**
+   - Answer option for questions
+   - Properties: text ("Richtig", "Falsch", "A", "B"), value (description for A/B)
+   - Helper extensions: `.richtig`, `.falsch`, `.optionA()`, `.optionB()`
+
+3. **`GoetheA1Question`**
+   - Individual question in the exam
+   - Properties: questionNumber (1-15), prompt, type, options[], correctOptionID
+   - Computed: correctOption
+
+4. **`GoetheA1Text`**
+   - Text snippet (email, notice, sign, ad)
+   - Properties: title (optional), content, textNumber (optional)
+   - Used for passage text in each part
+
+5. **`GoetheA1ReadingPart`**
+   - One of 3 exam parts
+   - Properties: partNumber (1-3), title, instructions, textType, texts[], questions[]
+   - Computed: questionCount, questionRange
+   - Each part has ~5 questions
+
+6. **`GoetheA1ReadingExam`**
+   - Complete exam with all 3 parts
+   - Properties: title, level ("A1"), duration (25min), totalQuestions (15), parts[], tags[]
+   - Computed: allQuestions, part1, part2, part3
+
+7. **`GoetheA1QuestionResult`**
+   - Result for single question
+   - Properties: question, selectedOptionID
+   - Computed: isCorrect, selectedOption, correctOption
+
+8. **`GoetheA1PartResult`**
+   - Results for one part (5 questions)
+   - Properties: partNumber, questionResults[]
+   - Computed: correctCount, totalCount, score, scorePercentage
+
+9. **`GoetheA1ExamResult`**
+   - Complete exam results
+   - Properties: examId, partResults[], completedAt
+   - Computed: correctCount, totalCount, overallScore, isPassed (≥60%), part1Result, part2Result, part3Result
+
+10. **`GoetheA1UserProgress`**
+    - Track user progress across Goethe A1 exams
+    - Properties: userId, level, completedExamIds[], totalAttempts, averageScore, bestScore, latestScore, isPassed, part1AverageScore, part2AverageScore, part3AverageScore, lastActivityAt
+    - Computed: completedCount, scorePercentages, partScorePercentages, isStarted
+    - All scores validated (clamped 0.0-1.0)
+
+11. **`GoetheA1ExamCompletion`**
+    - Completion tracking for Goethe exams
+    - Properties: userId, examId, level, score, isPassed, completedAt, attemptNumber, timeSpent (optional)
+    - Computed: scorePercentage, isPerfect, timeSpentFormatted
+    - Validation: Score clamped, attemptNumber minimum 1
+
+**Official Format Compliance**:
+- 3 parts per exam (Goethe-Institut structure)
+- Part 1: Informal texts (emails, messages) - 5 True/False questions
+- Part 2: Situation-based texts (ads, notices) - 5 A/B choice questions
+- Part 3: Signs and notices (opening hours, rules) - 5 True/False questions
+- Total: 15 questions, 25 minutes
+- Pass threshold: 60% (9/15 correct)
+
+**Dependencies**: Foundation
+
+---
+
 **Business Rules**:
 - Each passage belongs to exactly one level (A1, A2, B1, B2, C1, C2)
 - Each question has exactly one correct answer
@@ -267,6 +347,60 @@ Prost/
 **Dependencies**: ReadingModels.swift
 
 ---
+
+#### `SampleData/GoetheA1Samples.swift` (NEW - Goethe Format)
+**Scope**: Mock data for official Goethe A1 Reading exams  
+**Responsibility**:
+- Provide complete sample Goethe A1 exam with all 3 parts
+- Provide sample completion and progress data
+- Enable testing of official exam format
+
+**Extensions Provided**:
+
+1. **`GoetheA1Option` helpers**
+   - `.richtig` / `.falsch`: Pre-built True/False options
+   - `.optionA(description)` / `.optionB(description)`: Factory methods for A/B choices
+
+2. **`GoetheA1ReadingExam.sampleExam1`**
+   - Complete realistic Goethe A1 Reading exam
+   - **Fixed UUID**: 00000000-0000-0000-0000-000000000020
+   - **Part 1**: Email from Anna (Berlin trip) - 5 True/False questions
+   - **Part 2**: Supermarket ad + Restaurant notice - 5 A/B choice questions
+   - **Part 3**: Shop hours + Park rules - 5 True/False questions
+   - Total: 15 questions, 25 minutes, A1 level
+   - Tags: ["goethe", "a1", "official-format", "practice"]
+
+3. **`GoetheA1ExamCompletion.sampleCompletion`**
+   - Sample completion record for exam
+   - 80% score (12/15 correct) - Passed
+   - Attempt #1, completed 3 days ago
+   - Time spent: 22:30 minutes
+
+4. **`GoetheA1UserProgress.sampleProgress`**
+   - User who has attempted Goethe A1 exams
+   - 1 exam completed, 2 total attempts
+   - Overall: avg 75%, best 80%, latest 80%, passed ✓
+   - Part 1: 80%, Part 2: 70%, Part 3: 75%
+
+5. **`GoetheA1UserProgress.notStartedProgress`**
+   - User who hasn't started Goethe A1
+   - All scores 0%, not passed
+   - For demo of initial state
+
+**Business Rules**:
+- Exam must have exactly 3 parts
+- Each part has ~5 questions (15 total)
+- Part 1 & 3: True/False format
+- Part 2: A/B choice format
+- Pass threshold: 60% (9/15 correct)
+- Realistic German A1-level content
+- Time tracking optional but encouraged
+
+**Dependencies**: GoetheA1ReadingModels.swift, ReadingModels.swift (User)
+
+---
+
+**Business Rules**:
 
 ### Services Layer
 
@@ -480,7 +614,8 @@ let results = PassageFilterService.applyFiltersAndSort(
 **Published Properties**:
 - `currentUser: User` - Currently logged-in user (sample data)
 - `completions: [PassageCompletion]` - All completion records
-- `userProgress: [UserProgress]` - Progress for each level
+- `userProgress: [UserProgress]` - Progress for each level (A2/B1/B2)
+- `goetheA1Progress: GoetheA1UserProgress` - **Special progress for A1 Goethe exams** (NEW)
 
 **Public Methods**:
 
@@ -543,45 +678,95 @@ ContentView()
 
 ### Views Layer - Reading Feature
 
-#### `Views/Reading/ReadingDashboardView.swift`
-**Scope**: Main entry point for Reading module  
+#### `Views/Reading/ReadingDashboardView.swift` (ENHANCED - Collapsible + Smart Ordering)
+**Scope**: Main entry point for Reading module with intelligent card ordering  
 **Responsibility**:
-- Display all CEFR levels (A1, A2, B1, B2) with progress
-- Navigate to level-specific passage list
-- Show completion status and scores (latest + best)
+- Display all CEFR levels with progress
+- **Smart ordering: current → not started → completed**
+- **Collapsible cards** (tap to expand/collapse)
+- **Auto-expand current level** on load
+- **Special handling for A1** (Goethe format vs regular passages)
+- Navigate to level-specific content
 - Reflect real-time progress updates
 
 **Boundaries**:
-- ✅ Level grid/list layout
-- ✅ Navigation to LevelPassagesView
+- ✅ Collapsible level cards
+- ✅ Smart ordering algorithm
+- ✅ A1 Goethe vs A2/B1/B2 regular cards
+- ✅ Type-safe navigation
 - ✅ Uses AppState for dynamic data
 - ❌ No question logic
 - ❌ No score calculation (uses model)
 
 **Business Rules**:
-- Display exactly 4 levels: A1, A2, B1, B2
-- Show "Not started" for levels with 0 completed passages
-- Show "X passages completed", "Latest: Y%", "Best: Z%" for active levels
-- Levels are always displayed in order: A1 → A2 → B1 → B2
-- Progress updates automatically when user completes passages
+- Display exactly 4 levels: A1 (Goethe), A2, B1, B2
+- **Smart Ordering**:
+  * In Progress (1+ attempts, best < 90%) → **Top**
+  * Not Started (0 attempts) → **Middle**
+  * Completed (best ≥ 90%) → **Bottom**
+- **Default Expansion**:
+  * Current level (first in-progress) → Expanded
+  * All others → Collapsed
+- **A1 Special Treatment**:
+  * Uses GoetheA1ProgressCard (3-part structure)
+  * Uses GoetheA1UserProgress data
+  * Navigates to Goethe exams (future)
+- **A2/B1/B2**:
+  * Use LevelProgressCard (simple passages)
+  * Use UserProgress data
+  * Navigate to LevelPassagesView
+- Progress updates automatically when user completes
 
 **State Management**:
 - `@EnvironmentObject appState: AppState` - Reads userProgress array
-- Reactive to state changes (completions update dashboard)
+- `@State expandedLevels: Set<String>` - Tracks which cards expanded
+- `@State navigationPath: NavigationPath` - Type-safe navigation
+- Computed: `orderedLevels`, `currentLevel`
+- Functions: `levelStatus()`, `goetheStatus()` - Determine order
+
+**Ordering Algorithm**:
+```swift
+enum LevelStatus: Int {
+    case inProgress = 0  // First
+    case notStarted = 1  // Second
+    case completed = 2   // Last
+}
+
+// Determine status for each level
+// Sort by status.rawValue
+// Render in sorted order
+```
 
 **UI Elements**:
 - NavigationStack with title "Reading"
-- ScrollView with level cards
-- Each card is a NavigationLink to LevelPassagesView
-- Cards show latest + best scores side-by-side
+- ScrollView with ordered level cards
+- A1: GoetheA1ProgressCard
+- A2/B1/B2: LevelProgressCard
+- Each card is collapsible (header = toggle, button = navigate)
+
+**Navigation**:
+- Type-safe NavigationPath
+- `.navigationDestination(for: UserProgress.self)` for regular levels
+- `.navigationDestination(for: String.self)` for Goethe A1
+
+**Auto-Expand Logic**:
+```swift
+.onAppear {
+    if let current = currentLevel {
+        expandedLevels.insert(current)
+    }
+}
+```
 
 **Dependencies**:
 - AppState (data source)
-- LevelProgressCard.swift (component)
+- GoetheA1ProgressCard.swift (A1 component)
+- LevelProgressCard.swift (A2/B1/B2 component)
 - LevelPassagesView.swift (navigation target)
 - ProstTheme (styling)
-- ReadingModels.swift (data)
-- ReadingSamples.swift (mock data)
+- ReadingModels.swift, GoetheA1ReadingModels.swift (data)
+
+---
 
 ---
 
@@ -898,44 +1083,138 @@ scoreComparison = CompletionService.getScoreComparison(
 
 ### Views Layer - Components
 
-#### `Views/Components/LevelProgressCard.swift`
-**Scope**: Reusable level progress card component  
+#### `Views/Components/LevelProgressCard.swift` (ENHANCED - Collapsible)
+**Scope**: Reusable collapsible level progress card for A2/B1/B2  
 **Responsibility**:
-- Display level badge (A1, A2, etc.)
-- Show progress text (passages completed)
-- **Display both latest AND best scores** (Q1 requirement)
-- Show "Not started" for empty levels
-- Provide consistent card styling
+- Display level badge and summary
+- **Expand/collapse to show details** (NEW)
+- Show current score and completion count
+- Provide navigation to passages
+- Clean, minimal design
 
 **Boundaries**:
 - ✅ Visual representation of UserProgress
-- ✅ Reusable across any dashboard
-- ❌ No navigation logic (parent handles)
+- ✅ Collapsible interaction
+- ✅ Navigation button
 - ❌ No data fetching
 
+**Collapsed State** (Default):
+- Level badge (60x60)
+- Text: "5 passages • 100%" (if started) or just level name
+- Status: "In Progress" or "Not Started"
+- Chevron down icon (tap to expand)
+
+**Expanded State**:
+- All collapsed content
+- Divider
+- Current Score: 100%
+- Completed: 5 passages
+- "Continue Practice" button (navigation)
+- Chevron up icon (tap to collapse)
+
 **Business Rules**:
-- Badge shows level text prominently
-- If completedCount > 0: Show count and **both scores**
-- If completedCount == 0: Show "Not started"
-- Scores displayed as integer percentages (65%, not 0.65)
-- **Latest score** shown first, then **best score**
-- Format: "Latest: 67%  Best: 100%"
+- Collapsed by default (unless current level)
+- Scores displayed as integer percentages
+- "Continue Practice" for all states (consistent CTA)
+- Chevron rotates 180° with smooth spring animation
+
+**State Management**:
+- Receives `progress: UserProgress` as input
+- Receives `@Binding isExpanded: Bool` for collapse state
+- Receives `onNavigate: () -> Void` closure for navigation
 
 **UI Elements**:
-- HStack with level badge (60x60 rounded square)
-- VStack with progress text and scores
-- HStack with Latest/Best score pairs
-- Chevron right icon
-- Card background (prostCard modifier)
+- Header button (tap to expand/collapse)
+- Expanded section with stats
+- "Continue Practice" action button (accent color)
+- StatItem subcomponent (label + value pairs)
 
 **Usage**:
 ```swift
-LevelProgressCard(progress: userProgress)
+LevelProgressCard(
+    progress: userProgress,
+    isExpanded: $isExpanded,
+    onNavigate: { /* navigate */ }
+)
 ```
 
 **Dependencies**:
 - ProstTheme (styling)
 - ReadingModels.swift (UserProgress)
+
+---
+
+#### `Views/Components/GoetheA1ProgressCard.swift` (NEW - Goethe Format)
+**Scope**: Special collapsible card for Goethe A1 exam format  
+**Responsibility**:
+- Display A1 badge and readiness status
+- **Show 3-part exam structure** (unique to Goethe)
+- **Expand/collapse to show part scores**
+- Color-code performance per part
+- Provide navigation to Goethe exams
+
+**Boundaries**:
+- ✅ Visual representation of GoetheA1UserProgress
+- ✅ Collapsible interaction
+- ✅ 3-part breakdown
+- ✅ Readiness indicators
+- ❌ No data fetching
+
+**Collapsed State**:
+- A1 badge (60x60)
+- Text: "Current: 80% Ready ✓" (if started) or "Not Started"
+- Chevron down icon
+
+**Expanded State (Started)**:
+- Current score + readiness status
+- Divider
+- Part 1: 85% ✓
+- Part 2: 70% ⚠️
+- Part 3: 85% ✓
+- "Continue Practice" button
+
+**Expanded State (Not Started)**:
+- "Not Started" status
+- Divider
+- Exam structure: "3 Parts • 15 Questions • 25min"
+- Part descriptions:
+  * 1. Informal Texts - 5 True/False
+  * 2. Situations - 5 A/B Choices
+  * 3. Signs & Notices - 5 True/False
+- Pass threshold: 60%
+- "Start First Exam" button
+
+**Readiness Status**:
+- ≥80%: "Ready ✓" (green)
+- 60-79%: "Almost Ready" (orange)
+- <60%: "Keep Practicing" (orange)
+
+**Part Status Icons**:
+- ≥80%: ✓ (green)
+- 60-79%: ⚠️ (orange)
+- <60%: ⚠️ (red)
+
+**State Management**:
+- Receives `progress: GoetheA1UserProgress` as input
+- Receives `@Binding isExpanded: Bool` for collapse state
+- Receives `onNavigate: () -> Void` closure for navigation
+
+**Supporting Components**:
+- `PartScoreRow`: Part number + title + score + status icon
+- `ExamPartDescription`: Numbered part list for not-started state
+
+**Usage**:
+```swift
+GoetheA1ProgressCard(
+    progress: goetheProgress,
+    isExpanded: $isExpanded,
+    onNavigate: { /* navigate to exams */ }
+)
+```
+
+**Dependencies**:
+- ProstTheme (styling)
+- GoetheA1ReadingModels.swift (GoetheA1UserProgress)
 
 ---
 
@@ -1266,6 +1545,50 @@ SomeView()
 
 ---
 
+## App Assets
+
+### App Icon
+
+#### `Assets.xcassets/AppIcon.appiconset/AppIcon.png`
+**Purpose**: Official app icon for Prost  
+**Dimensions**: 1024x1024 pixels (iOS universal requirement)
+
+**Design Elements**:
+- 🍺 **Beer mug with foam** - Represents "Prost!" (German for "Cheers!")
+- 📋 **Papers with checkmarks** - Learning and testing
+- ✏️ **Pencil** - Writing and practice
+- 🇩🇪 **German flag colors** - Black, red, gold background
+- ⭐ **Sparkles** - Achievement and excellence
+
+**Symbolism**:
+- **German culture**: Beer mug + flag colors
+- **Celebration**: "Prost" = toast to progress
+- **Learning**: Papers, checkmarks, pencil
+- **Success**: Sparkles, achievement
+
+**Technical Specs**:
+- Format: PNG
+- Size: 1024x1024 (required by Apple)
+- Location: `Assets.xcassets/AppIcon.appiconset/`
+- Configuration: `Contents.json` (universal iOS icon)
+- Auto-scaling: iOS generates all sizes from 1024x1024
+
+**Where it appears**:
+- Home screen
+- App Store
+- Settings app
+- Spotlight search
+- Multitasking view
+- Notifications
+
+**Design Principles**:
+- Clean, recognizable at small sizes
+- Culturally relevant (German theme)
+- Represents app purpose (learning + celebration)
+- Professional yet friendly
+
+---
+
 ## Business Rules Summary
 
 ### Reading Module Flow
@@ -1394,23 +1717,42 @@ SomeView()
 
 ## Future Enhancements
 
-### Architecture
+### Completed in v2.2.0 ✅
+- [x] Goethe A1 official exam format (3 parts, 15 questions)
+- [x] Collapsible dashboard cards with smart ordering
+- [x] Per-level progress tracking and aggregation
+- [x] Search, filtering, and sorting for passages
+- [x] Completion tracking (manual + automatic)
+- [x] Attempt history and score comparison
+- [x] App icon (Prost beer mug design)
+
+### Architecture (Planned)
 - [ ] Add dependency injection
 - [ ] Implement MVVM or TCA architecture
 - [ ] Add repository pattern for data access
 - [ ] Implement proper error handling
+- [ ] Backend API integration
+- [ ] Data persistence (Core Data or SwiftData)
 
-### Features
+### Features (Planned)
+- [ ] Complete Goethe A1 exam flow (not just data models)
+- [ ] Other exam formats (A2, B1, B2)
+- [ ] Audio support for Listening module
+- [ ] Speaking practice with recording
+- [ ] Writing exercises with feedback
 - [ ] Spaced repetition algorithm
 - [ ] Progress sync across devices (CloudKit)
 - [ ] Offline mode with local persistence
 - [ ] Dark mode support
-- [ ] Accessibility improvements
+- [ ] Accessibility improvements (VoiceOver, Dynamic Type)
 - [ ] Localization (German UI option)
+- [ ] Achievements and badges
+- [ ] Study reminders and notifications
 
-### Testing
+### Testing (Planned)
 - [ ] Increase unit test coverage
 - [ ] Add snapshot tests
+- [ ] Add UI tests
 - [ ] Add performance tests
 - [ ] CI/CD pipeline
 
@@ -1422,12 +1764,19 @@ SomeView()
 - **A1/A2**: Beginner levels
 - **B1/B2**: Intermediate levels
 - **C1/C2**: Advanced levels (not yet implemented)
+- **Goethe-Institut**: German cultural association that administers official German language exams
+- **Goethe-Zertifikat A1**: Official beginner-level German certification exam
+- **Start Deutsch 1**: Alternative name for Goethe A1 exam
+- **Richtig/Falsch**: German for "True/False" (question format in exam)
 - **DRY**: Don't Repeat Yourself
 - **CTA**: Call-to-Action (button)
 - **Prost**: German word for "Cheers!"
+- **SwiftUI**: Apple's modern declarative UI framework for iOS
+- **Combine**: Apple's framework for reactive programming (used with @Published)
+- **NavigationPath**: Type-safe navigation state in SwiftUI
 
 ---
 
 **Last Updated**: December 13, 2025  
-**Version**: 2.1.0 (Phase 3: Search, filtering, and sorting)
+**Version**: 2.2.0 (Goethe A1 exam format + collapsible dashboard)
 
