@@ -13,6 +13,40 @@ struct GoetheA1ProgressCard: View {
     @Binding var isExpanded: Bool
     let onNavigate: () -> Void
     
+    // Readiness status
+    private var readinessStatus: (text: String, color: Color, icon: String) {
+        let score = progress.bestScorePercentage
+        if score >= 80 {
+            return ("Ready ✓", .green, "checkmark.seal.fill")
+        } else if score >= 60 {
+            return ("Almost Ready", .orange, "exclamationmark.triangle.fill")
+        } else if progress.isStarted {
+            return ("Keep Practicing", .orange, "arrow.clockwise")
+        } else {
+            return ("Not Started", .secondary, "")
+        }
+    }
+    
+    // Find weakest part for guidance
+    private var weakestPart: (number: Int, name: String, description: String)? {
+        guard progress.isStarted else { return nil }
+        
+        let scores = [
+            (1, progress.part1ScorePercentage, "Part 1", "Informal Texts (True/False)"),
+            (2, progress.part2ScorePercentage, "Part 2", "Situations (A/B Choices)"),
+            (3, progress.part3ScorePercentage, "Part 3", "Signs & Notices (True/False)")
+        ]
+        
+        guard let weakest = scores.min(by: { $0.1 < $1.1 }) else { return nil }
+        
+        // If all parts >= 80%, no weak part
+        if weakest.1 >= 80 {
+            return nil
+        }
+        
+        return (weakest.0, weakest.2, weakest.3)
+    }
+    
     var body: some View {
         VStack(spacing: 0) {
             // Header (always visible) - tappable to expand/collapse
@@ -37,23 +71,20 @@ struct GoetheA1ProgressCard: View {
                         )
                     
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("Goethe-Zertifikat A1")
-                            .font(ProstTheme.Typography.body.weight(.medium))
-                            .foregroundStyle(.primary)
-                        
                         if progress.isStarted {
-                            HStack(spacing: 8) {
-                                Text("Best: \(progress.bestScorePercentage)%")
-                                    .font(ProstTheme.Typography.caption)
-                                    .foregroundStyle(.secondary)
-                                if progress.isPassed {
-                                    Image(systemName: "checkmark.seal.fill")
-                                        .font(.caption)
-                                        .foregroundStyle(.green)
-                                }
-                            }
+                            Text("Current: \(progress.bestScorePercentage)%")
+                                .font(ProstTheme.Typography.body.weight(.medium))
+                                .foregroundStyle(.primary)
+                            
+                            Text(readinessStatus.text)
+                                .font(ProstTheme.Typography.caption)
+                                .foregroundStyle(readinessStatus.color)
                         } else {
-                            Text("Not started")
+                            Text("A1")
+                                .font(ProstTheme.Typography.body.weight(.medium))
+                                .foregroundStyle(.primary)
+                            
+                            Text("Not Started")
                                 .font(ProstTheme.Typography.caption)
                                 .foregroundStyle(.secondary)
                         }
@@ -78,100 +109,105 @@ struct GoetheA1ProgressCard: View {
                         .padding(.horizontal, 16)
                     
                     if progress.isStarted {
-                        // Scores
+                        // Part scores with status icons
                         VStack(alignment: .leading, spacing: 8) {
-                            HStack(spacing: 12) {
-                                StatItem(label: "Latest", value: "\(progress.latestScorePercentage)%")
-                                StatItem(label: "Best", value: "\(progress.bestScorePercentage)%")
-                                StatItem(label: "Average", value: "\(progress.averageScorePercentage)%")
-                            }
+                            PartScoreRow(
+                                partNumber: 1,
+                                title: "Part 1",
+                                score: progress.part1ScorePercentage
+                            )
+                            
+                            PartScoreRow(
+                                partNumber: 2,
+                                title: "Part 2",
+                                score: progress.part2ScorePercentage
+                            )
+                            
+                            PartScoreRow(
+                                partNumber: 3,
+                                title: "Part 3",
+                                score: progress.part3ScorePercentage
+                            )
                         }
                         .padding(.horizontal, 16)
                         
-                        // 3-Part breakdown
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text("Parts Performance")
-                                .font(ProstTheme.Typography.caption.weight(.medium))
-                                .foregroundStyle(.secondary)
-                                .padding(.horizontal, 16)
-                            
-                            HStack(spacing: 12) {
-                                PartScoreChip(
-                                    partNumber: 1,
-                                    title: "Informal",
-                                    score: progress.part1ScorePercentage
-                                )
+                        // Smart guidance
+                        if let weak = weakestPart {
+                            HStack(alignment: .top, spacing: 8) {
+                                Image(systemName: "target")
+                                    .font(.body)
+                                    .foregroundStyle(.blue)
                                 
-                                PartScoreChip(
-                                    partNumber: 2,
-                                    title: "Situations",
-                                    score: progress.part2ScorePercentage
-                                )
-                                
-                                PartScoreChip(
-                                    partNumber: 3,
-                                    title: "Signs",
-                                    score: progress.part3ScorePercentage
-                                )
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text("Next: Practice \(weak.name)")
+                                        .font(ProstTheme.Typography.body.weight(.medium))
+                                        .foregroundStyle(.primary)
+                                    Text(weak.description)
+                                        .font(ProstTheme.Typography.caption)
+                                        .foregroundStyle(.secondary)
+                                }
                             }
+                            .padding(12)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .background(Color.blue.opacity(0.08))
+                            .cornerRadius(8)
+                            .padding(.horizontal, 16)
+                        } else {
+                            HStack(spacing: 8) {
+                                Image(systemName: "star.fill")
+                                    .font(.body)
+                                    .foregroundStyle(.yellow)
+                                Text("All parts strong! Ready for the exam.")
+                                    .font(ProstTheme.Typography.body.weight(.medium))
+                                    .foregroundStyle(.primary)
+                            }
+                            .padding(12)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .background(Color.green.opacity(0.08))
+                            .cornerRadius(8)
                             .padding(.horizontal, 16)
                         }
-                        
-                        // Metadata
-                        HStack(spacing: 16) {
-                            HStack(spacing: 4) {
-                                Image(systemName: "doc.text")
-                                    .font(.caption)
-                                Text("\(progress.completedCount) exam\(progress.completedCount == 1 ? "" : "s")")
-                                    .font(ProstTheme.Typography.caption)
-                            }
-                            
-                            HStack(spacing: 4) {
-                                Image(systemName: "arrow.clockwise")
-                                    .font(.caption)
-                                Text("\(progress.totalAttempts) attempt\(progress.totalAttempts == 1 ? "" : "s")")
-                                    .font(ProstTheme.Typography.caption)
-                            }
-                        }
-                        .foregroundStyle(.secondary)
-                        .padding(.horizontal, 16)
                     } else {
-                        // Exam structure overview
+                        // Not started: Show exam structure
                         VStack(alignment: .leading, spacing: 8) {
-                            Text("Exam Structure (15 questions, 25 min)")
+                            Text("3 Parts • 15 Questions • 25 min")
                                 .font(ProstTheme.Typography.caption)
                                 .foregroundStyle(.secondary)
-                                .padding(.horizontal, 16)
                             
-                            HStack(spacing: 12) {
-                                ExamPartIndicator(
+                            VStack(alignment: .leading, spacing: 6) {
+                                ExamPartDescription(
                                     number: 1,
                                     title: "Informal Texts",
-                                    subtitle: "5 True/False"
+                                    description: "5 True/False questions"
                                 )
                                 
-                                ExamPartIndicator(
+                                ExamPartDescription(
                                     number: 2,
                                     title: "Situations",
-                                    subtitle: "5 A/B Choice"
+                                    description: "5 A/B Choices"
                                 )
                                 
-                                ExamPartIndicator(
+                                ExamPartDescription(
                                     number: 3,
-                                    title: "Signs",
-                                    subtitle: "5 True/False"
+                                    title: "Signs & Notices",
+                                    description: "5 True/False questions"
                                 )
                             }
-                            .padding(.horizontal, 16)
+                            
+                            Text("Pass threshold: 60%")
+                                .font(ProstTheme.Typography.caption)
+                                .foregroundStyle(.secondary)
+                                .padding(.top, 4)
                         }
+                        .padding(.horizontal, 16)
                     }
                     
-                    // Navigate button
+                    // Action button
                     Button {
                         onNavigate()
                     } label: {
                         HStack {
-                            Text(progress.isStarted ? "View Exams" : "Start Practicing")
+                            Text(progress.isStarted ? "Continue Practice" : "Start First Exam")
                                 .font(ProstTheme.Typography.body.weight(.medium))
                             Spacer()
                             Image(systemName: "arrow.right")
@@ -194,77 +230,90 @@ struct GoetheA1ProgressCard: View {
 
 // MARK: - Supporting Components
 
-/// Small chip showing part number and score
-struct PartScoreChip: View {
+/// Row showing part score with status icon
+struct PartScoreRow: View {
     let partNumber: Int
     let title: String
     let score: Int
     
-    var scoreColor: Color {
-        if score >= 80 { return .green }
-        if score >= 60 { return .orange }
-        return .red
+    private var statusIcon: (name: String, color: Color) {
+        if score >= 80 {
+            return ("checkmark.circle.fill", .green)
+        } else if score >= 60 {
+            return ("exclamationmark.triangle.fill", .orange)
+        } else {
+            return ("exclamationmark.triangle.fill", .red)
+        }
     }
     
     var body: some View {
-        VStack(spacing: 4) {
-            Text("Part \(partNumber)")
-                .font(.system(.caption2, design: .rounded).weight(.bold))
-                .foregroundStyle(.secondary)
+        HStack(spacing: 12) {
+            Text(title)
+                .font(ProstTheme.Typography.body)
+                .foregroundStyle(.primary)
+            
+            Spacer()
             
             Text("\(score)%")
-                .font(.system(.body, design: .rounded).weight(.bold))
-                .foregroundStyle(scoreColor)
+                .font(ProstTheme.Typography.body.weight(.semibold))
+                .foregroundStyle(statusIcon.color)
             
-            Text(title)
-                .font(.system(.caption2))
-                .foregroundStyle(.secondary)
-                .lineLimit(1)
+            Image(systemName: statusIcon.name)
+                .font(.body)
+                .foregroundStyle(statusIcon.color)
         }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, 8)
-        .padding(.horizontal, 4)
-        .background(Color(.systemGray6))
-        .cornerRadius(8)
     }
 }
 
-/// Indicator for exam part (when not started)
-struct ExamPartIndicator: View {
+/// Description of exam part (not started state)
+struct ExamPartDescription: View {
     let number: Int
     let title: String
-    let subtitle: String
+    let description: String
     
     var body: some View {
-        VStack(spacing: 4) {
-            Text("\(number)")
-                .font(.system(.body, design: .rounded).weight(.bold))
-                .foregroundStyle(.primary)
-                .frame(width: 28, height: 28)
-                .background(
-                    Circle()
-                        .fill(Color.accentColor.opacity(0.12))
-                )
-            
-            Text(title)
-                .font(.system(.caption2))
-                .foregroundStyle(.primary)
-                .lineLimit(1)
-            
-            Text(subtitle)
-                .font(.system(.caption2))
+        HStack(spacing: 8) {
+            Text("\(number).")
+                .font(ProstTheme.Typography.body.weight(.bold))
                 .foregroundStyle(.secondary)
-                .lineLimit(1)
+                .frame(width: 20, alignment: .leading)
+            
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title)
+                    .font(ProstTheme.Typography.body)
+                    .foregroundStyle(.primary)
+                Text(description)
+                    .font(ProstTheme.Typography.caption)
+                    .foregroundStyle(.secondary)
+            }
         }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, 8)
-        .padding(.horizontal, 4)
     }
 }
 
 // MARK: - Preview
 
-#Preview("Started Progress") {
+#Preview("Started - Ready") {
+    VStack(spacing: 16) {
+        GoetheA1ProgressCard(
+            progress: GoetheA1UserProgress(
+                userId: User.sampleUser.id,
+                completedExamIds: [UUID()],
+                totalAttempts: 2,
+                bestScore: 0.85,
+                isPassed: true,
+                part1AverageScore: 0.85,
+                part2AverageScore: 0.85,
+                part3AverageScore: 0.85
+            ),
+            isExpanded: .constant(true),
+            onNavigate: {}
+        )
+    }
+    .padding()
+    .prostBackground()
+}
+
+#Preview("Started - Needs Work") {
     VStack(spacing: 16) {
         GoetheA1ProgressCard(
             progress: .sampleProgress,

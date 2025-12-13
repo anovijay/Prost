@@ -36,19 +36,19 @@ struct LevelProgressCard: View {
                         )
                     
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("\(progress.completedCount) passages completed")
-                            .font(ProstTheme.Typography.body)
-                            .foregroundStyle(.primary)
-                        
                         if progress.completedCount > 0 {
-                            Text("Best: \(progress.bestScorePercentage)%")
-                                .font(ProstTheme.Typography.caption)
-                                .foregroundStyle(.secondary)
+                            Text("\(progress.completedCount) passage\(progress.completedCount == 1 ? "" : "s") • \(progress.bestScorePercentage)%")
+                                .font(ProstTheme.Typography.body.weight(.medium))
+                                .foregroundStyle(.primary)
                         } else {
-                            Text("Not started")
-                                .font(ProstTheme.Typography.caption)
-                                .foregroundStyle(.secondary)
+                            Text(progress.level)
+                                .font(ProstTheme.Typography.body.weight(.medium))
+                                .foregroundStyle(.primary)
                         }
+                        
+                        Text(progress.completedCount > 0 ? "In Progress" : "Not Started")
+                            .font(ProstTheme.Typography.caption)
+                            .foregroundStyle(.secondary)
                     }
                     
                     Spacer()
@@ -69,25 +69,34 @@ struct LevelProgressCard: View {
                     Divider()
                         .padding(.horizontal, 16)
                     
-                    // Detailed stats
                     if progress.completedCount > 0 {
+                        // Stats
                         VStack(alignment: .leading, spacing: 8) {
-                            HStack(spacing: 12) {
-                                StatItem(label: "Latest", value: "\(progress.latestScorePercentage)%")
-                                StatItem(label: "Best", value: "\(progress.bestScorePercentage)%")
-                                StatItem(label: "Average", value: "\(progress.averageScorePercentage)%")
+                            HStack {
+                                Text("Current Score:")
+                                    .font(ProstTheme.Typography.body)
+                                    .foregroundStyle(.secondary)
+                                Spacer()
+                                Text("\(progress.bestScorePercentage)%")
+                                    .font(ProstTheme.Typography.body.weight(.bold))
+                                    .foregroundStyle(.primary)
                             }
                             
-                            HStack(spacing: 12) {
-                                StatItem(label: "Attempts", value: "\(progress.totalAttempts)")
-                                StatItem(label: "Completed", value: "\(progress.completedCount)")
+                            HStack {
+                                Text("Completed:")
+                                    .font(ProstTheme.Typography.body)
+                                    .foregroundStyle(.secondary)
                                 Spacer()
+                                Text("\(progress.completedCount) passage\(progress.completedCount == 1 ? "" : "s")")
+                                    .font(ProstTheme.Typography.body)
+                                    .foregroundStyle(.primary)
                             }
                         }
                         .padding(.horizontal, 16)
                     } else {
+                        // Not started message
                         Text("Start practicing to track your progress")
-                            .font(ProstTheme.Typography.caption)
+                            .font(ProstTheme.Typography.body)
                             .foregroundStyle(.secondary)
                             .padding(.horizontal, 16)
                     }
@@ -97,7 +106,7 @@ struct LevelProgressCard: View {
                         onNavigate()
                     } label: {
                         HStack {
-                            Text("View Passages")
+                            Text("Continue Practice")
                                 .font(ProstTheme.Typography.body.weight(.medium))
                             Spacer()
                             Image(systemName: "arrow.right")
@@ -117,22 +126,3 @@ struct LevelProgressCard: View {
         .prostCard()
     }
 }
-
-// MARK: - Stat Item Component
-
-struct StatItem: View {
-    let label: String
-    let value: String
-    
-    var body: some View {
-        VStack(alignment: .leading, spacing: 2) {
-            Text(label)
-                .font(.system(.caption2))
-                .foregroundStyle(.secondary)
-            Text(value)
-                .font(.system(.body, design: .rounded).weight(.semibold))
-                .foregroundStyle(.primary)
-        }
-    }
-}
-
