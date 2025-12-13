@@ -21,18 +21,11 @@ struct ReadingResultsView: View {
     private var scorePercentage: Int { completion.scorePercentage }
     
     private var completionHistory: [PassageCompletion] {
-        appState.getCompletionHistory(for: passage.id)
+        appState.completionHistory(for: passage.id)
     }
-    
-    private var previousCompletions: [PassageCompletion] {
-        completionHistory.filter { $0.id != completion.id }
-    }
-    
-    private var scoreComparison: CompletionService.ScoreComparison {
-        CompletionService.getScoreComparison(
-            newScore: completion.score,
-            previousCompletions: previousCompletions
-        )
+
+    private var scoreComparison: AppState.ScoreComparison {
+        appState.compareScore(for: passage.id, newScore: completion.score)
     }
 
     var body: some View {
@@ -205,7 +198,7 @@ struct ReadingResultsView: View {
     
     // MARK: - Helpers
     
-    private func messageColor(for comparison: CompletionService.ScoreComparison) -> Color {
+    private func messageColor(for comparison: AppState.ScoreComparison) -> Color {
         switch comparison {
         case .firstAttempt:
             return .primary

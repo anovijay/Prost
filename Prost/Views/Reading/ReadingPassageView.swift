@@ -102,17 +102,7 @@ struct ReadingPassageView: View {
     // MARK: - Actions
     
     private func markAsComplete() {
-        let attemptNumber = appState.getNextAttemptNumber(for: passage.id)
-        
-        let completion = CompletionService.createCompletion(
-            userId: appState.currentUser.id,
-            passageId: passage.id,
-            level: passage.level,
-            score: 1.0,  // Perfect score for manual completion
-            attemptNumber: attemptNumber
-        )
-        
-        appState.addCompletion(completion, for: passage)
+        _ = appState.recordCompletion(for: passage, score: 1.0)
         showSuccessMessage = true
     }
 }

@@ -21,7 +21,7 @@ struct LevelPassagesView: View {
     private var passageCompletionInfo: [UUID: PassageCompletionInfo] {
         var info: [UUID: PassageCompletionInfo] = [:]
         for passage in passages {
-            let history = appState.getCompletionHistory(for: passage.id)
+            let history = appState.completionHistory(for: passage.id)
             if !history.isEmpty {
                 let bestScore = history.map { $0.score }.max() ?? 0.0
                 info[passage.id] = PassageCompletionInfo(
@@ -32,14 +32,10 @@ struct LevelPassagesView: View {
         }
         return info
     }
-    
+
     // Apply filters and sorting
     private var filteredAndSortedPassages: [ReadingPassage] {
-        PassageFilterService.applyFiltersAndSort(
-            to: passages,
-            filters: filters,
-            completionInfo: passageCompletionInfo
-        )
+        passages.applying(filters: filters, completionInfo: passageCompletionInfo)
     }
     
     // Extract all unique tags from passages
