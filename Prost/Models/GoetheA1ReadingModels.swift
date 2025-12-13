@@ -313,6 +313,72 @@ struct GoetheA1ExamResult: Identifiable, Codable, Hashable {
     }
 }
 
+// MARK: - Goethe A1 User Progress
+
+/// Track user progress across Goethe A1 exams and parts
+struct GoetheA1UserProgress: Identifiable, Codable, Hashable {
+    let id: UUID
+    let userId: UUID
+    let level: String              // "A1"
+    
+    // Overall stats
+    let completedExamIds: [UUID]   // Which exams completed
+    let totalAttempts: Int         // Total exam attempts
+    let averageScore: Double       // Average across all attempts (0.0-1.0)
+    let bestScore: Double          // Best overall score
+    let latestScore: Double        // Most recent score
+    let isPassed: Bool             // Has user passed at least once (>= 60%)
+    
+    // Per-part stats (aggregated across all exams)
+    let part1AverageScore: Double  // Average for Part 1
+    let part2AverageScore: Double  // Average for Part 2
+    let part3AverageScore: Double  // Average for Part 3
+    
+    let lastActivityAt: Date
+    
+    init(
+        id: UUID = UUID(),
+        userId: UUID,
+        level: String = "A1",
+        completedExamIds: [UUID] = [],
+        totalAttempts: Int = 0,
+        averageScore: Double = 0.0,
+        bestScore: Double = 0.0,
+        latestScore: Double = 0.0,
+        isPassed: Bool = false,
+        part1AverageScore: Double = 0.0,
+        part2AverageScore: Double = 0.0,
+        part3AverageScore: Double = 0.0,
+        lastActivityAt: Date = Date()
+    ) {
+        self.id = id
+        self.userId = userId
+        self.level = level
+        self.completedExamIds = completedExamIds
+        self.totalAttempts = totalAttempts
+        self.averageScore = min(max(averageScore, 0.0), 1.0)
+        self.bestScore = min(max(bestScore, 0.0), 1.0)
+        self.latestScore = min(max(latestScore, 0.0), 1.0)
+        self.isPassed = isPassed
+        self.part1AverageScore = min(max(part1AverageScore, 0.0), 1.0)
+        self.part2AverageScore = min(max(part2AverageScore, 0.0), 1.0)
+        self.part3AverageScore = min(max(part3AverageScore, 0.0), 1.0)
+        self.lastActivityAt = lastActivityAt
+    }
+    
+    // Computed properties
+    var completedCount: Int { completedExamIds.count }
+    var averageScorePercentage: Int { Int(averageScore * 100) }
+    var bestScorePercentage: Int { Int(bestScore * 100) }
+    var latestScorePercentage: Int { Int(latestScore * 100) }
+    
+    var part1ScorePercentage: Int { Int(part1AverageScore * 100) }
+    var part2ScorePercentage: Int { Int(part2AverageScore * 100) }
+    var part3ScorePercentage: Int { Int(part3AverageScore * 100) }
+    
+    var isStarted: Bool { totalAttempts > 0 }
+}
+
 // MARK: - Goethe A1 Completion (for tracking)
 
 /// Completion record for Goethe A1 exam (similar to PassageCompletion)

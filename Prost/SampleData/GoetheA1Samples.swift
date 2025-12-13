@@ -277,3 +277,41 @@ extension GoetheA1ExamCompletion {
     }
 }
 
+// MARK: - Sample Progress
+
+extension GoetheA1UserProgress {
+    static var sampleProgress: GoetheA1UserProgress {
+        GoetheA1UserProgress(
+            userId: User.sampleUser.id,
+            level: "A1",
+            completedExamIds: [UUID(uuidString: "00000000-0000-0000-0000-000000000020")!],
+            totalAttempts: 2,
+            averageScore: 0.75,        // Average of 2 attempts: (70% + 80%) / 2
+            bestScore: 0.80,           // Best attempt: 80%
+            latestScore: 0.80,         // Most recent: 80%
+            isPassed: true,            // >= 60%
+            part1AverageScore: 0.80,   // Part 1: 4/5 avg
+            part2AverageScore: 0.70,   // Part 2: 3.5/5 avg
+            part3AverageScore: 0.75,   // Part 3: 3.75/5 avg
+            lastActivityAt: Date(timeIntervalSinceNow: -3 * 24 * 60 * 60) // 3 days ago
+        )
+    }
+    
+    static var notStartedProgress: GoetheA1UserProgress {
+        GoetheA1UserProgress(
+            userId: User.sampleUser.id,
+            level: "A1",
+            completedExamIds: [],
+            totalAttempts: 0,
+            averageScore: 0.0,
+            bestScore: 0.0,
+            latestScore: 0.0,
+            isPassed: false,
+            part1AverageScore: 0.0,
+            part2AverageScore: 0.0,
+            part3AverageScore: 0.0,
+            lastActivityAt: Date()
+        )
+    }
+}
+
