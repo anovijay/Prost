@@ -7,6 +7,7 @@
 
 import Foundation
 import SwiftUI
+import Combine
 
 /// App-wide state management for user data and completions
 /// Note: In-memory storage only. Will be replaced with Core Data in Phase 4.
