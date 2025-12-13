@@ -155,13 +155,15 @@ Prost/
    - Tracks individual passage completion attempts
    - Properties: id, userId, passageId, score, completedAt, attemptNumber
    - Computed: scorePercentage (0-100), isPerfect (score == 1.0)
+   - **Validation**: Score clamped to 0.0-1.0 range, attemptNumber enforced minimum of 1
    - Conforms to: Identifiable, Codable, Hashable
    - Purpose: Record each quiz submission with metadata
 
 7. **`UserProgress`**
    - Aggregates user performance per level
    - Properties: userId, level, completedPassageIds[], totalAttempts, averageScore, bestScore, latestScore, lastActivityAt
-   - Computed: completedCount, averageScorePercentage, bestScorePercentage, latestScorePercentage
+   - Computed: completedCount, averageScorePercentage, bestScorePercentage, latestScorePercentage, isValid
+   - **Validation**: isValid checks attempts >= completed passages, best >= average, scores in valid range
    - Conforms to: Identifiable, Codable, Hashable
    - Purpose: Dashboard statistics and progress tracking
 
@@ -181,6 +183,10 @@ Prost/
 - **Score aggregation**: averageScore = mean of all completions, bestScore = max score
 - **Tags**: lowercase, hyphenated, for backend search filtering (not user-facing)
 - **Tag search**: AND logic (passage must have all searched tags)
+- **Validation**: 
+  * Scores automatically clamped to 0.0-1.0 range
+  * Attempt numbers enforced minimum of 1
+  * UserProgress validated for logical consistency (best >= average, attempts >= passages)
 
 **Dependencies**: Foundation
 
@@ -211,12 +217,14 @@ Prost/
 
 2. **`ReadingPassage.sampleBerlinDay`**
    - A2-level passage about Lena's day in Berlin
+   - **Fixed UUID**: 00000000-0000-0000-0000-000000000010
    - 3 comprehension questions with 3 options each
-   - **New**: Tags: ["travel", "daily-life", "food", "culture"]
+   - Tags: ["travel", "daily-life", "food", "culture"]
    - Demonstrates proper model structure with search tags
 
 3. **`PassageCompletion.sampleCompletions`**
    - 2 completion records for sample passage
+   - **Uses fixed passage UUID** for proper linking
    - Attempt 1: 67% score, 5 days ago
    - Attempt 2: 100% score (perfect), 2 days ago
    - Shows progression over attempts
@@ -225,8 +233,9 @@ Prost/
    - Array of 4 levels (A1, A2, B1, B2) with aggregated data
    - A1: 10 passages completed, avg 65%, best 90%, latest 70%
    - A2: 5 passages completed, avg 58%, best 100%, latest 100%
+   - **A2 includes fixed passage UUID** in completedPassageIds
    - B1/B2: Not started (0 passages, 0 attempts)
-   - Includes sample passage in A2 completed passages
+   - Demonstrates proper data linking and completion tracking
 
 5. **`LevelProgress.sampleLevels`** (Deprecated)
    - Legacy sample data, replaced by UserProgress.sampleProgress
@@ -475,35 +484,39 @@ wrongResults = results.filter { !$0.isCorrect }
 **Responsibility**:
 - Display level badge (A1, A2, etc.)
 - Show progress text (passages completed)
-- Show score percentage or "Not started"
+- **Display both latest AND best scores** (Q1 requirement)
+- Show "Not started" for empty levels
 - Provide consistent card styling
 
 **Boundaries**:
-- ✅ Visual representation of LevelProgress
+- ✅ Visual representation of UserProgress
 - ✅ Reusable across any dashboard
 - ❌ No navigation logic (parent handles)
 - ❌ No data fetching
 
 **Business Rules**:
 - Badge shows level text prominently
-- If passagesCompleted > 0: Show count and score
-- If passagesCompleted == 0: Show "Not started"
-- Score displayed as integer percentage (65%, not 0.65)
+- If completedCount > 0: Show count and **both scores**
+- If completedCount == 0: Show "Not started"
+- Scores displayed as integer percentages (65%, not 0.65)
+- **Latest score** shown first, then **best score**
+- Format: "Latest: 67%  Best: 100%"
 
 **UI Elements**:
 - HStack with level badge (60x60 rounded square)
-- VStack with progress text
+- VStack with progress text and scores
+- HStack with Latest/Best score pairs
 - Chevron right icon
 - Card background (prostCard modifier)
 
 **Usage**:
 ```swift
-LevelProgressCard(levelProgress: levelProgress)
+LevelProgressCard(progress: userProgress)
 ```
 
 **Dependencies**:
 - ProstTheme (styling)
-- ReadingModels.swift (LevelProgress)
+- ReadingModels.swift (UserProgress)
 
 ---
 
@@ -873,5 +886,5 @@ SomeView()
 ---
 
 **Last Updated**: December 13, 2025  
-**Version**: 1.1.0 (Added completion tracking and search tags)
+**Version**: 1.2.0 (Critical issues fixed: validation, UUID linking, UI updated)
 
