@@ -1,0 +1,208 @@
+{
+    "exam": "Goethe A1",
+    "section": "Lesen Teil 2",
+    "difficulty": "exam_plus",
+    "questions": [
+      {
+        "id": 1,
+        "situation": "Sie möchten am Samstagvormittag einkaufen und mit Karte bezahlen.",
+        "textA": "Supermarkt Nord\nSamstag: 8:00–12:00\nNur Barzahlung",
+        "textB": "Supermarkt Süd\nSamstag: 9:00–18:00\nKartenzahlung möglich",
+        "answer": "B",
+        "explanation": "Text B is open on Saturday morning and allows card payment. Text A is open but only accepts cash, which does not meet all conditions."
+      },
+      {
+        "id": 2,
+        "situation": "Sie möchten heute Abend einen Deutschkurs online besuchen.",
+        "textA": "Deutschkurs A\nBeginn: 18:00 Uhr\nPräsenzunterricht",
+        "textB": "Deutschkurs B\nBeginn: 19:00 Uhr\nOnline-Unterricht",
+        "answer": "B",
+        "explanation": "Text B matches both conditions: evening time and online format. Text A is in the evening but not online."
+      },
+      {
+        "id": 3,
+        "situation": "Sie möchten am Sonntag mit Ihrem Kind schwimmen gehen.",
+        "textA": "Hallenbad West\nSonntag: 10:00–14:00\nKinder willkommen",
+        "textB": "Sportbad Ost\nSonntag: 9:00–18:00\nNur Erwachsene",
+        "answer": "A",
+        "explanation": "Text A is open on Sunday and allows children. Text B is open longer but does not allow children."
+      },
+      {
+        "id": 4,
+        "situation": "Sie brauchen heute Vormittag einen Arzttermin.",
+        "textA": "Praxis Dr. Klein\nHeute: 14:00–18:00",
+        "textB": "Praxis Dr. Lang\nHeute: 8:00–12:00\nNur mit Termin",
+        "answer": "B",
+        "explanation": "Text B offers morning hours today. Text A is only open in the afternoon."
+      },
+      {
+        "id": 5,
+        "situation": "Sie möchten morgen früh mit dem Bus fahren und ein Ticket online kaufen.",
+        "textA": "www.citybus.de\nTickets online\nAbfahrten ab 10:00 Uhr",
+        "textB": "www.bus24.de\nTickets online\nAbfahrten ab 6:00 Uhr",
+        "answer": "B",
+        "explanation": "Text B allows online ticket purchase and early departures. Text A starts too late in the day."
+      },
+      {
+        "id": 6,
+        "situation": "Sie möchten am Abend essen gehen, aber nur vegetarisch.",
+        "textA": "Restaurant Grün\n18:00–22:00\nVegetarische Gerichte",
+        "textB": "Restaurant Fleisch\n18:00–23:00\nGrill und Steak",
+        "answer": "A",
+        "explanation": "Text A offers vegetarian food in the evening. Text B does not offer vegetarian meals."
+      },
+      {
+        "id": 7,
+        "situation": "Sie möchten am Samstag einen Brief abschicken und brauchen lange Öffnungszeiten.",
+        "textA": "Postfiliale Mitte\nSamstag: 9:00–12:00",
+        "textB": "Postfiliale Plus\nSamstag: 8:00–18:00",
+        "answer": "B",
+        "explanation": "Text B is open much longer on Saturday, which fits the requirement. Text A closes too early."
+      },
+      {
+        "id": 8,
+        "situation": "Sie möchten heute Abend einen Film sehen, aber nicht vor 20 Uhr.",
+        "textA": "Kino City\nFilmbeginn: 18:30 Uhr",
+        "textB": "Kino Star\nFilmbeginn: 20:30 Uhr",
+        "answer": "B",
+        "explanation": "Text B starts after 20:00, which matches the condition. Text A starts too early."
+      },
+      {
+        "id": 9,
+        "situation": "Sie möchten am Sonntag ein Café besuchen und draußen sitzen.",
+        "textA": "Café Blau\nSonntag: geöffnet\nTerrasse",
+        "textB": "Café Rot\nSonntag: geschlossen",
+        "answer": "A",
+        "explanation": "Text A is open on Sunday and has outdoor seating. Text B is closed."
+      },
+      {
+        "id": 10,
+        "situation": "Sie möchten einen Sprachkurs buchen und vorher Informationen per E-Mail bekommen.",
+        "textA": "Sprachschule Alpha\nInfo nur telefonisch",
+        "textB": "Sprachschule Beta\nInfo per E-Mail möglich",
+        "answer": "B",
+        "explanation": "Text B allows receiving information via email. Text A only offers phone contact."
+      },
+      {
+        "id": 11,
+        "situation": "Sie möchten morgens trainieren, bevor Sie zur Arbeit gehen.",
+        "textA": "Fitnessclub Early\nGeöffnet ab 6:00 Uhr",
+        "textB": "Fitnessclub Late\nGeöffnet ab 10:00 Uhr",
+        "answer": "A",
+        "explanation": "Text A opens early in the morning, suitable before work. Text B opens too late."
+      },
+      {
+        "id": 12,
+        "situation": "Sie möchten heute etwas kaufen, aber nur bis 17 Uhr Zeit haben.",
+        "textA": "Shop Express\nHeute: 8:00–16:00",
+        "textB": "Shop Center\nHeute: 10:00–19:00",
+        "answer": "A",
+        "explanation": "Text A closes before 17:00 and fits the time constraint. Text B is open longer but does not matter."
+      },
+      {
+        "id": 13,
+        "situation": "Sie möchten ein Zimmer reservieren und sofort eine Bestätigung bekommen.",
+        "textA": "Hotel Sonne\nReservierung nur vor Ort",
+        "textB": "Hotel Mond\nOnline-Buchung mit Bestätigung",
+        "answer": "B",
+        "explanation": "Text B allows online booking with confirmation. Text A requires visiting in person."
+      },
+      {
+        "id": 14,
+        "situation": "Sie möchten am Wochenende einen Kurs besuchen, aber nur an einem Tag.",
+        "textA": "Kurs A\nSamstag und Sonntag",
+        "textB": "Kurs B\nNur Samstag",
+        "answer": "B",
+        "explanation": "Text B runs only on one day, which matches the condition. Text A runs on both days."
+      },
+      {
+        "id": 15,
+        "situation": "Sie möchten heute Nachmittag in die Bibliothek gehen.",
+        "textA": "Bibliothek Nord\nHeute: 9:00–13:00",
+        "textB": "Bibliothek Süd\nHeute: 12:00–18:00",
+        "answer": "B",
+        "explanation": "Text B is open in the afternoon. Text A closes too early."
+      },
+      {
+        "id": 16,
+        "situation": "Sie möchten am Abend einen Termin buchen, ohne zu telefonieren.",
+        "textA": "Terminservice Online\n24 Stunden buchbar",
+        "textB": "Terminservice Telefon\nNur 9:00–12:00",
+        "answer": "A",
+        "explanation": "Text A allows online booking at any time. Text B requires calling during morning hours."
+      },
+      {
+        "id": 17,
+        "situation": "Sie möchten am Sonntag etwas unternehmen, das nichts kostet.",
+        "textA": "Museum Stadt\nSonntag: Eintritt frei",
+        "textB": "Zoo Park\nSonntag: Eintritt 12 Euro",
+        "answer": "A",
+        "explanation": "Text A is free on Sunday. Text B requires payment."
+      },
+      {
+        "id": 18,
+        "situation": "Sie möchten heute Abend etwas essen und reservieren müssen.",
+        "textA": "Restaurant Luna\nReservierung nötig\nAb 18:00 Uhr",
+        "textB": "Imbiss Schnell\nKeine Reservierung",
+        "answer": "A",
+        "explanation": "Text A requires a reservation and is open in the evening. Text B does not meet the reservation condition."
+      },
+      {
+        "id": 19,
+        "situation": "Sie möchten am Samstag einen Kurs beginnen, nicht unter der Woche.",
+        "textA": "Kurs Start\nBeginn: Montag",
+        "textB": "Kurs Weekend\nBeginn: Samstag",
+        "answer": "B",
+        "explanation": "Text B starts on Saturday. Text A starts on a weekday."
+      },
+      {
+        "id": 20,
+        "situation": "Sie möchten heute noch einkaufen, aber erst nach der Arbeit.",
+        "textA": "Laden Kurz\nHeute bis 16:00",
+        "textB": "Laden Spät\nHeute bis 21:00",
+        "answer": "B",
+        "explanation": "Text B is open late enough after work. Text A closes too early."
+      },
+      {
+        "id": 21,
+        "situation": "Sie möchten ein Geschenk kaufen und brauchen Beratung.",
+        "textA": "Online Shop\nKeine Beratung",
+        "textB": "Fachgeschäft\nPersönliche Beratung",
+        "answer": "B",
+        "explanation": "Text B offers personal advice. Text A does not."
+      },
+      {
+        "id": 22,
+        "situation": "Sie möchten heute Vormittag einen Termin ohne Anmeldung.",
+        "textA": "Service Punkt\nOhne Termin\n9:00–12:00",
+        "textB": "Service Büro\nNur mit Anmeldung",
+        "answer": "A",
+        "explanation": "Text A allows visits without an appointment in the morning. Text B requires registration."
+      },
+      {
+        "id": 23,
+        "situation": "Sie möchten am Abend einen Kurs besuchen, aber nicht zu spät nach Hause kommen.",
+        "textA": "Kurs Abend\n18:00–19:30",
+        "textB": "Kurs Nacht\n20:00–22:00",
+        "answer": "A",
+        "explanation": "Text A ends earlier in the evening. Text B finishes too late."
+      },
+      {
+        "id": 24,
+        "situation": "Sie möchten am Sonntag etwas kaufen, aber nur am Vormittag.",
+        "textA": "Markt Zentrum\nSonntag: 8:00–12:00",
+        "textB": "Shop Mall\nSonntag: 12:00–18:00",
+        "answer": "A",
+        "explanation": "Text A is open Sunday morning. Text B only opens in the afternoon."
+      },
+      {
+        "id": 25,
+        "situation": "Sie möchten heute online etwas bestellen und morgen bekommen.",
+        "textA": "Online Shop Fast\nLieferung am nächsten Tag",
+        "textB": "Online Shop Slow\nLieferung in 5 Tagen",
+        "answer": "A",
+        "explanation": "Text A offers next-day delivery, which meets the requirement. Text B delivers too late."
+      }
+    ]
+  }
+  

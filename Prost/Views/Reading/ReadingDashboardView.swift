@@ -70,9 +70,9 @@ struct ReadingDashboardView: View {
                                 }
                             ),
                             onNavigate: {
-                                // Special navigation for A1 (goes to Part 1 practices)
+                                // Special navigation for A1 (goes to parts overview)
                                 if item.level == "A1" {
-                                    navigationPath.append("a1_part1")
+                                    navigationPath.append("a1_parts")
                                 } else {
                                     navigationPath.append(item.progress)
                                 }
@@ -88,8 +88,8 @@ struct ReadingDashboardView: View {
                 LevelPassagesView(progress: progress)
             }
             .navigationDestination(for: String.self) { destination in
-                if destination == "a1_part1" {
-                    A1Part1PracticesView()
+                if destination == "a1_parts" {
+                    A1PartsView()
                 }
             }
         }
