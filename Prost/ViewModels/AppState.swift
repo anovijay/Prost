@@ -23,13 +23,22 @@ final class AppState: ObservableObject {
     // MARK: - Initialization
     
     init(
-        currentUser: User = .sampleUser,
-        completions: [PassageCompletion] = PassageCompletion.sampleCompletions,
-        userProgress: [UserProgress] = UserProgress.sampleProgress
+        currentUser: User,
+        completions: [PassageCompletion],
+        userProgress: [UserProgress]
     ) {
         self.currentUser = currentUser
         self.completions = completions
         self.userProgress = userProgress
+    }
+    
+    // Convenience initializer with sample data
+    convenience init() {
+        self.init(
+            currentUser: User.sampleUser,
+            completions: PassageCompletion.sampleCompletions,
+            userProgress: UserProgress.sampleProgress
+        )
     }
 }
 

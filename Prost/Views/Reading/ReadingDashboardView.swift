@@ -70,7 +70,7 @@ struct ReadingDashboardView: View {
     private var currentLevel: String? {
         orderedLevels.first(where: { level in
             if level.isGoethe {
-                let progress = level.progress as! GoetheA1UserProgress
+                let _ = level.progress as! GoetheA1UserProgress
                 let status = goetheStatus()
                 return status == .inProgress
             } else {

@@ -1,0 +1,284 @@
+{
+    "exam": "Goethe-Zertifikat A1: Start Deutsch 1",
+    "section": "Lesen",
+    "part": 1,
+    "instructions_de": "Lesen Sie den Text. Sind die Aussagen richtig (R) oder falsch (F)?",
+    "tests": [
+      {
+        "id": "N1",
+        "text": "Hallo Max,\nich bin heute im Homeoffice.\nDas Meeting ist um 14 Uhr online.\nBitte pünktlich sein.\n– Laura",
+        "statements": [
+          { "id": 1, "statement": "Laura arbeitet heute zu Hause.", "answer": "R" },
+          { "id": 2, "statement": "Das Meeting ist um 4 Uhr.", "answer": "F" },
+          { "id": 3, "statement": "Das Meeting ist online.", "answer": "R" },
+          { "id": 4, "statement": "Max soll zu spät kommen.", "answer": "F" },
+          { "id": 5, "statement": "Laura schreibt Max.", "answer": "R" }
+        ]
+      },
+      {
+        "id": "N2",
+        "text": "Hinweis:\nBitte Fenster schließen.\nDie Heizung ist an.\nDanke.",
+        "statements": [
+          { "id": 1, "statement": "Die Fenster sollen offen bleiben.", "answer": "F" },
+          { "id": 2, "statement": "Die Heizung ist an.", "answer": "R" },
+          { "id": 3, "statement": "Es ist ein Hinweis.", "answer": "R" },
+          { "id": 4, "statement": "Es geht um Essen.", "answer": "F" },
+          { "id": 5, "statement": "Man soll die Fenster schließen.", "answer": "R" }
+        ]
+      },
+      {
+        "id": "N3",
+        "text": "SMS:\nBin im Stau.\nKomme ca. 30 Minuten später.\nBitte warten.\n– Jonas",
+        "statements": [
+          { "id": 1, "statement": "Jonas kommt pünktlich.", "answer": "F" },
+          { "id": 2, "statement": "Jonas ist im Stau.", "answer": "R" },
+          { "id": 3, "statement": "Jonas kommt 30 Minuten später.", "answer": "R" },
+          { "id": 4, "statement": "Jonas fährt mit dem Zug.", "answer": "F" },
+          { "id": 5, "statement": "Jonas bittet um Warten.", "answer": "R" }
+        ]
+      },
+      {
+        "id": "N4",
+        "text": "E-Mail:\nLiebe Kunden,\nunser Büro zieht um.\nNeue Adresse ab 1. Juni:\nBahnhofstraße 10.\n– Team Service",
+        "statements": [
+          { "id": 1, "statement": "Das Büro bleibt am alten Ort.", "answer": "F" },
+          { "id": 2, "statement": "Das Büro hat eine neue Adresse.", "answer": "R" },
+          { "id": 3, "statement": "Der Umzug ist ab 1. Juni.", "answer": "R" },
+          { "id": 4, "statement": "Die neue Adresse ist Bahnhofstraße 10.", "answer": "R" },
+          { "id": 5, "statement": "Die E-Mail ist privat.", "answer": "F" }
+        ]
+      },
+      {
+        "id": "N5",
+        "text": "Notiz:\nBitte Licht ausmachen,\nwenn Sie den Raum verlassen.\nDanke.",
+        "statements": [
+          { "id": 1, "statement": "Das Licht soll an bleiben.", "answer": "F" },
+          { "id": 2, "statement": "Man soll das Licht ausmachen.", "answer": "R" },
+          { "id": 3, "statement": "Es geht um einen Raum.", "answer": "R" },
+          { "id": 4, "statement": "Es ist eine Einladung.", "answer": "F" },
+          { "id": 5, "statement": "Es ist eine Bitte.", "answer": "R" }
+        ]
+      },
+      {
+        "id": "N6",
+        "text": "Hallo Papa,\nder Zug kommt um 17:40 Uhr an.\nKannst du mich abholen?\n– Tim",
+        "statements": [
+          { "id": 1, "statement": "Der Zug kommt um 17:40 Uhr.", "answer": "R" },
+          { "id": 2, "statement": "Tim fährt mit dem Auto.", "answer": "F" },
+          { "id": 3, "statement": "Tim bittet um Abholung.", "answer": "R" },
+          { "id": 4, "statement": "Die Nachricht ist an Mama.", "answer": "F" },
+          { "id": 5, "statement": "Tim schreibt seinem Vater.", "answer": "R" }
+        ]
+      },
+      {
+        "id": "N7",
+        "text": "Info:\nYoga-Kurs\nDienstag und Donnerstag\n18–19 Uhr\nRaum 2",
+        "statements": [
+          { "id": 1, "statement": "Der Yoga-Kurs ist am Montag.", "answer": "F" },
+          { "id": 2, "statement": "Der Kurs ist zweimal pro Woche.", "answer": "R" },
+          { "id": 3, "statement": "Der Kurs dauert eine Stunde.", "answer": "R" },
+          { "id": 4, "statement": "Der Kurs ist in Raum 2.", "answer": "R" },
+          { "id": 5, "statement": "Der Kurs ist morgens.", "answer": "F" }
+        ]
+      },
+      {
+        "id": "N8",
+        "text": "SMS:\nIch habe deinen Schal gefunden.\nEr liegt im Büro auf dem Tisch.\n– Maria",
+        "statements": [
+          { "id": 1, "statement": "Maria hat einen Schal gefunden.", "answer": "R" },
+          { "id": 2, "statement": "Der Schal liegt zu Hause.", "answer": "F" },
+          { "id": 3, "statement": "Der Schal ist im Büro.", "answer": "R" },
+          { "id": 4, "statement": "Der Schal liegt auf dem Boden.", "answer": "F" },
+          { "id": 5, "statement": "Maria schreibt eine SMS.", "answer": "R" }
+        ]
+      },
+      {
+        "id": "N9",
+        "text": "Aushang:\nAufzug defekt.\nBitte Treppe benutzen.\nWir reparieren morgen.",
+        "statements": [
+          { "id": 1, "statement": "Der Aufzug funktioniert.", "answer": "F" },
+          { "id": 2, "statement": "Man soll die Treppe benutzen.", "answer": "R" },
+          { "id": 3, "statement": "Der Aufzug wird morgen repariert.", "answer": "R" },
+          { "id": 4, "statement": "Der Aushang ist über Essen.", "answer": "F" },
+          { "id": 5, "statement": "Der Aufzug ist kaputt.", "answer": "R" }
+        ]
+      },
+      {
+        "id": "N10",
+        "text": "E-Mail:\nHallo,\nIhr Kontoauszug ist jetzt online.\nSie können ihn herunterladen.\n– Ihre Bank",
+        "statements": [
+          { "id": 1, "statement": "Der Kontoauszug ist online.", "answer": "R" },
+          { "id": 2, "statement": "Der Kontoauszug kommt per Post.", "answer": "F" },
+          { "id": 3, "statement": "Man kann den Kontoauszug herunterladen.", "answer": "R" },
+          { "id": 4, "statement": "Die E-Mail kommt von der Bank.", "answer": "R" },
+          { "id": 5, "statement": "Es geht um einen Arzttermin.", "answer": "F" }
+        ]
+      },
+      {
+        "id": "N11",
+        "text": "SMS:\nKomme heute nicht ins Büro.\nBin krank.\nBis morgen.\n– Alex",
+        "statements": [
+          { "id": 1, "statement": "Alex ist krank.", "answer": "R" },
+          { "id": 2, "statement": "Alex kommt heute ins Büro.", "answer": "F" },
+          { "id": 3, "statement": "Alex kommt morgen wieder.", "answer": "R" },
+          { "id": 4, "statement": "Alex ist im Urlaub.", "answer": "F" },
+          { "id": 5, "statement": "Alex schreibt eine SMS.", "answer": "R" }
+        ]
+      },
+      {
+        "id": "N12",
+        "text": "Info:\nMuseum heute frei.\nEintritt kostenlos\nvon 10 bis 18 Uhr.",
+        "statements": [
+          { "id": 1, "statement": "Der Eintritt kostet heute nichts.", "answer": "R" },
+          { "id": 2, "statement": "Das Museum ist nur bis 10 Uhr offen.", "answer": "F" },
+          { "id": 3, "statement": "Das Museum schließt um 18 Uhr.", "answer": "R" },
+          { "id": 4, "statement": "Heute ist das Museum geschlossen.", "answer": "F" },
+          { "id": 5, "statement": "Es geht um ein Museum.", "answer": "R" }
+        ]
+      },
+      {
+        "id": "N13",
+        "text": "Hallo,\nder Elternabend ist am Mittwoch um 19 Uhr.\nOrt: Aula der Schule.\n– Klassenlehrer",
+        "statements": [
+          { "id": 1, "statement": "Der Elternabend ist am Mittwoch.", "answer": "R" },
+          { "id": 2, "statement": "Der Elternabend ist morgens.", "answer": "F" },
+          { "id": 3, "statement": "Der Elternabend ist um 19 Uhr.", "answer": "R" },
+          { "id": 4, "statement": "Der Ort ist die Aula.", "answer": "R" },
+          { "id": 5, "statement": "Die Nachricht ist vom Klassenlehrer.", "answer": "R" }
+        ]
+      },
+      {
+        "id": "N14",
+        "text": "Zettel:\nBitte Schuhe ausziehen.\nVielen Dank.",
+        "statements": [
+          { "id": 1, "statement": "Man soll Schuhe anlassen.", "answer": "F" },
+          { "id": 2, "statement": "Man soll Schuhe ausziehen.", "answer": "R" },
+          { "id": 3, "statement": "Es ist eine Bitte.", "answer": "R" },
+          { "id": 4, "statement": "Es geht um Essen.", "answer": "F" },
+          { "id": 5, "statement": "Der Text ist sehr kurz.", "answer": "R" }
+        ]
+      },
+      {
+        "id": "N15",
+        "text": "SMS:\nDer Deutschtest ist morgen.\nBitte Buch Seite 20–25 lernen.\n– Frau Weber",
+        "statements": [
+          { "id": 1, "statement": "Der Test ist heute.", "answer": "F" },
+          { "id": 2, "statement": "Der Test ist morgen.", "answer": "R" },
+          { "id": 3, "statement": "Man soll Seiten 20–25 lernen.", "answer": "R" },
+          { "id": 4, "statement": "Die Nachricht kommt von Frau Weber.", "answer": "R" },
+          { "id": 5, "statement": "Es geht um einen Deutschtest.", "answer": "R" }
+        ]
+      },
+      {
+        "id": "N16",
+        "text": "Info:\nBäckerei Schmidt\nHeute: 6–12 Uhr\nNachmittag geschlossen",
+        "statements": [
+          { "id": 1, "statement": "Die Bäckerei ist den ganzen Tag offen.", "answer": "F" },
+          { "id": 2, "statement": "Die Bäckerei schließt um 12 Uhr.", "answer": "R" },
+          { "id": 3, "statement": "Nachmittags ist geschlossen.", "answer": "R" },
+          { "id": 4, "statement": "Die Bäckerei heißt Schmidt.", "answer": "R" },
+          { "id": 5, "statement": "Die Info ist über ein Restaurant.", "answer": "F" }
+        ]
+      },
+      {
+        "id": "N17",
+        "text": "E-Mail:\nHallo,\nder Vertrag endet am 31. Juli.\nBitte geben Sie den Schlüssel ab.\n– Verwaltung",
+        "statements": [
+          { "id": 1, "statement": "Der Vertrag endet am 31. Juli.", "answer": "R" },
+          { "id": 2, "statement": "Der Vertrag endet im Januar.", "answer": "F" },
+          { "id": 3, "statement": "Der Schlüssel soll abgegeben werden.", "answer": "R" },
+          { "id": 4, "statement": "Die E-Mail kommt von der Verwaltung.", "answer": "R" },
+          { "id": 5, "statement": "Es geht um einen Urlaub.", "answer": "F" }
+        ]
+      },
+      {
+        "id": "N18",
+        "text": "SMS:\nBin schon im Restaurant.\nTisch ist reserviert.\n– Elena",
+        "statements": [
+          { "id": 1, "statement": "Elena ist im Restaurant.", "answer": "R" },
+          { "id": 2, "statement": "Der Tisch ist reserviert.", "answer": "R" },
+          { "id": 3, "statement": "Elena ist zu Hause.", "answer": "F" },
+          { "id": 4, "statement": "Es gibt keine Reservierung.", "answer": "F" },
+          { "id": 5, "statement": "Elena schreibt eine SMS.", "answer": "R" }
+        ]
+      },
+      {
+        "id": "N19",
+        "text": "Aushang:\nParkplatz nur für Kunden.\nBitte Parkschein sichtbar legen.",
+        "statements": [
+          { "id": 1, "statement": "Der Parkplatz ist für alle.", "answer": "F" },
+          { "id": 2, "statement": "Nur Kunden dürfen hier parken.", "answer": "R" },
+          { "id": 3, "statement": "Der Parkschein soll sichtbar sein.", "answer": "R" },
+          { "id": 4, "statement": "Es geht um einen Bus.", "answer": "F" },
+          { "id": 5, "statement": "Es gibt Regeln für den Parkplatz.", "answer": "R" }
+        ]
+      },
+      {
+        "id": "N20",
+        "text": "E-Mail:\nHallo,\nIhr Passwort wurde geändert.\nWenn Sie das nicht waren,\nkontaktieren Sie uns bitte.\n– Support",
+        "statements": [
+          { "id": 1, "statement": "Das Passwort ist geändert.", "answer": "R" },
+          { "id": 2, "statement": "Es geht um ein Passwort.", "answer": "R" },
+          { "id": 3, "statement": "Man soll nichts tun.", "answer": "F" },
+          { "id": 4, "statement": "Die E-Mail kommt vom Support.", "answer": "R" },
+          { "id": 5, "statement": "Es geht um einen Kurs.", "answer": "F" }
+        ]
+      },
+      {
+        "id": "N21",
+        "text": "SMS:\nIch arbeite heute länger.\nEssen bitte ohne mich.\n– Stefan",
+        "statements": [
+          { "id": 1, "statement": "Stefan arbeitet heute länger.", "answer": "R" },
+          { "id": 2, "statement": "Stefan isst heute mit.", "answer": "F" },
+          { "id": 3, "statement": "Stefan schreibt eine SMS.", "answer": "R" },
+          { "id": 4, "statement": "Stefan ist heute frei.", "answer": "F" },
+          { "id": 5, "statement": "Es geht um Essen.", "answer": "R" }
+        ]
+      },
+      {
+        "id": "N22",
+        "text": "Info:\nKinderarzt Dr. Klein\nUrlaub vom 10.–20. August\nVertretung: Praxis Müller",
+        "statements": [
+          { "id": 1, "statement": "Dr. Klein hat Urlaub.", "answer": "R" },
+          { "id": 2, "statement": "Der Urlaub ist im August.", "answer": "R" },
+          { "id": 3, "statement": "Dr. Klein arbeitet vom 10.–20. August.", "answer": "F" },
+          { "id": 4, "statement": "Die Vertretung ist Praxis Müller.", "answer": "R" },
+          { "id": 5, "statement": "Es geht um einen Zahnarzt.", "answer": "F" }
+        ]
+      },
+      {
+        "id": "N23",
+        "text": "E-Mail:\nHallo,\nder Kurs fällt heute aus.\nDer Lehrer ist krank.\nNeuer Termin folgt.\n– Sprachschule",
+        "statements": [
+          { "id": 1, "statement": "Der Kurs findet heute statt.", "answer": "F" },
+          { "id": 2, "statement": "Der Lehrer ist krank.", "answer": "R" },
+          { "id": 3, "statement": "Es gibt heute keinen Kurs.", "answer": "R" },
+          { "id": 4, "statement": "Der neue Termin ist bekannt.", "answer": "F" },
+          { "id": 5, "statement": "Die Nachricht kommt von einer Sprachschule.", "answer": "R" }
+        ]
+      },
+      {
+        "id": "N24",
+        "text": "Zettel:\nBitte nach dem Kochen\nKüche sauber machen.\nDanke!",
+        "statements": [
+          { "id": 1, "statement": "Die Küche soll sauber sein.", "answer": "R" },
+          { "id": 2, "statement": "Man soll vor dem Kochen putzen.", "answer": "F" },
+          { "id": 3, "statement": "Es ist eine Bitte.", "answer": "R" },
+          { "id": 4, "statement": "Es geht um die Küche.", "answer": "R" },
+          { "id": 5, "statement": "Es geht um Sport.", "answer": "F" }
+        ]
+      },
+      {
+        "id": "N25",
+        "text": "SMS:\nBin im Supermarkt.\nBrauchen wir noch Eier?\n– Julia",
+        "statements": [
+          { "id": 1, "statement": "Julia ist im Supermarkt.", "answer": "R" },
+          { "id": 2, "statement": "Julia fragt nach Eiern.", "answer": "R" },
+          { "id": 3, "statement": "Julia ist im Büro.", "answer": "F" },
+          { "id": 4, "statement": "Julia schreibt eine E-Mail.", "answer": "F" },
+          { "id": 5, "statement": "Es geht um Einkaufen.", "answer": "R" }
+        ]
+      }
+    ]
+  }
+  
