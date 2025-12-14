@@ -46,51 +46,101 @@ final class AppState: ObservableObject {
     /// Add a passage completion and update progress
     func addCompletion(_ completion: PassageCompletion, for passage: ReadingPassage) {
         completions.append(completion)
-        
-        // Update or create progress for this level
-        userProgress = CompletionService.updateProgress(
-            currentProgress: userProgress,
-            newCompletion: completion,
-            allCompletions: completions,
-            userId: currentUser.id
-        )
+        updateProgress(for: passage.level, newCompletion: completion)
     }
     
     /// Get completion history for a specific passage
     func completionHistory(for passageId: UUID) -> [PassageCompletion] {
-        CompletionService.getCompletionHistory(
-            userId: currentUser.id,
-            passageId: passageId,
-            allCompletions: completions
-        )
+        completions
+            .filter { $0.passageId == passageId && $0.userId == currentUser.id }
+            .sorted { $0.completedAt < $1.completedAt }
     }
     
     /// Check if a passage has been completed
     func isCompleted(_ passageId: UUID) -> Bool {
-        CompletionService.isCompleted(
-            userId: currentUser.id,
-            passageId: passageId,
-            allCompletions: completions
-        )
+        completions.contains { $0.passageId == passageId && $0.userId == currentUser.id }
     }
     
     /// Get next attempt number for a passage
     func getNextAttemptNumber(for passageId: UUID) -> Int {
-        CompletionService.calculateAttemptNumber(
-            userId: currentUser.id,
-            passageId: passageId,
-            existingCompletions: completions
-        )
+        let existingAttempts = completions.filter {
+            $0.passageId == passageId && $0.userId == currentUser.id
+        }
+        return existingAttempts.count + 1
     }
     
     /// Compare new score with previous attempts
-    func compareScore(for passageId: UUID, newScore: Double) -> CompletionService.ScoreComparison {
+    func compareScore(for passageId: UUID, newScore: Double) -> ScoreComparison {
         let previousCompletions = completionHistory(for: passageId).filter { $0.score != newScore }
-        return CompletionService.getScoreComparison(
-            newScore: newScore,
-            previousCompletions: previousCompletions
-        )
+        
+        guard !previousCompletions.isEmpty else {
+            return .first
+        }
+        
+        let previousBest = previousCompletions.map { $0.score }.max() ?? 0
+        
+        if newScore > previousBest {
+            return .improved
+        } else if newScore < previousBest {
+            return .declined
+        } else {
+            return .same
+        }
     }
     
+    // MARK: - Private Methods
+    
+    /// Update user progress after a completion
+    private func updateProgress(for level: String, newCompletion: PassageCompletion) {
+        let userId = currentUser.id
+        
+        // Get all completions for this level and user
+        let levelCompletions = completions.filter {
+            $0.userId == userId && $0.level == level
+        }
+        
+        // Calculate stats
+        let completedPassageIds = Set(levelCompletions.map { $0.passageId })
+        let totalAttempts = levelCompletions.count
+        let averageScore = levelCompletions.isEmpty ? 0.0 : levelCompletions.map { $0.score }.reduce(0, +) / Double(levelCompletions.count)
+        let bestScore = levelCompletions.map { $0.score }.max() ?? 0.0
+        let latestScore = newCompletion.score
+        
+        // Update or create progress
+        if let index = userProgress.firstIndex(where: { $0.level == level && $0.userId == userId }) {
+            userProgress[index] = UserProgress(
+                id: userProgress[index].id,
+                userId: userId,
+                level: level,
+                completedPassageIds: Array(completedPassageIds),
+                totalAttempts: totalAttempts,
+                averageScore: averageScore,
+                bestScore: bestScore,
+                latestScore: latestScore,
+                lastActivityAt: Date()
+            )
+        } else {
+            let newProgress = UserProgress(
+                userId: userId,
+                level: level,
+                completedPassageIds: Array(completedPassageIds),
+                totalAttempts: totalAttempts,
+                averageScore: averageScore,
+                bestScore: bestScore,
+                latestScore: latestScore,
+                lastActivityAt: Date()
+            )
+            userProgress.append(newProgress)
+        }
+    }
+}
+
+// MARK: - Score Comparison
+
+enum ScoreComparison {
+    case first       // First attempt
+    case improved    // Better than previous best
+    case declined    // Worse than previous best
+    case same        // Same as previous best
 }
 
