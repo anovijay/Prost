@@ -108,16 +108,16 @@ extension UserProgress {
         let berlinPassageId = UUID(uuidString: "00000000-0000-0000-0000-000000000010")!
         
         return [
-            // A1 - Completed level
+            // A1 - Not started (will show real completion data from Part 1 & 2 practices)
             UserProgress(
                 userId: userId,
                 level: "A1",
-                completedPassageIds: Array(repeating: UUID(), count: 10),
-                totalAttempts: 15,
-                averageScore: 0.65,
-                bestScore: 0.90,
-                latestScore: 0.70,
-                lastActivityAt: Date(timeIntervalSinceNow: -10 * 24 * 60 * 60) // 10 days ago
+                completedPassageIds: [],
+                totalAttempts: 0,
+                averageScore: 0.0,
+                bestScore: 0.0,
+                latestScore: 0.0,
+                lastActivityAt: Date()
             ),
             // A2 - Current level (includes sample passage with 2 attempts)
             UserProgress(
