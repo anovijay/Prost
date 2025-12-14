@@ -64,9 +64,7 @@ struct GoetheA1ExamsView: View {
                     // Exams list
                     ForEach(exams) { exam in
                         NavigationLink {
-                            // TODO: Navigate to exam detail/start view
-                            Text("Exam: \(exam.title)")
-                                .prostBackground()
+                            GoetheA1ExamView(exam: exam)
                         } label: {
                             GoetheExamCardView(exam: exam)
                         }
