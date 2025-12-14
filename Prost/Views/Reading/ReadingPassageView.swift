@@ -15,7 +15,8 @@ struct ReadingPassageView: View {
     @State private var showManualCompleteConfirmation = false
     @State private var showSuccessMessage = false
     @State private var showAddWordSheet = false
-    @State private var selectedWordText = ""
+    @State private var showWordSavedAlert = false
+    @State private var savedWordText = ""
     
     private var isAlreadyCompleted: Bool {
         appState.isCompleted(passage.id)
@@ -40,12 +41,24 @@ struct ReadingPassageView: View {
                     .cornerRadius(8)
                 }
                 
-                Text(passage.text)
-                    .font(ProstTheme.Typography.body)
-                    .foregroundStyle(.primary)
-                    .lineSpacing(6)
-                    .textSelection(.enabled)
-                    .prostCard()
+                VStack(alignment: .trailing, spacing: 8) {
+                    Text(passage.text)
+                        .font(ProstTheme.Typography.body)
+                        .foregroundStyle(.primary)
+                        .lineSpacing(6)
+                        .textSelection(.enabled)
+                        .prostCard()
+                    
+                    // Quick add word button
+                    Button {
+                        showAddWordSheet = true
+                    } label: {
+                        Label("Add Word to List", systemImage: "plus.circle")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                    .buttonStyle(.plain)
+                }
 
                 Spacer(minLength: 80)
             }
@@ -83,19 +96,6 @@ struct ReadingPassageView: View {
         .navigationTitle(passage.level)
         .navigationBarTitleDisplayMode(.inline)
         .prostBackground()
-        .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                Menu {
-                    Button {
-                        showAddWordSheet = true
-                    } label: {
-                        Label("Add Word to List", systemImage: "plus.circle")
-                    }
-                } label: {
-                    Image(systemName: "book.closed")
-                }
-            }
-        }
         .navigationDestination(isPresented: $goToQuestions) {
             ReadingQuestionsView(passage: passage)
         }
@@ -113,8 +113,15 @@ struct ReadingPassageView: View {
                         notes: notes
                     )
                     appState.addWord(vocabularyWord)
+                    savedWordText = word
+                    showWordSavedAlert = true
                 }
             )
+        }
+        .alert("Word Saved!", isPresented: $showWordSavedAlert) {
+            Button("OK", role: .cancel) { }
+        } message: {
+            Text("'\(savedWordText)' has been added to your word list.")
         }
         .alert("Mark as Complete?", isPresented: $showManualCompleteConfirmation) {
             Button("Cancel", role: .cancel) { }

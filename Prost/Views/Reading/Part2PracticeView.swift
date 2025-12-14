@@ -17,6 +17,9 @@ struct Part2PracticeView: View {
     @State private var showResults = false
     @State private var completion: PassageCompletion?
     @State private var questionResults: [ReadingQuestionResult] = []
+    @State private var showAddWordSheet = false
+    @State private var showWordSavedAlert = false
+    @State private var savedWordText = ""
     
     // Extract situation and texts from the question prompt
     private var situationComponents: (situation: String, textA: String, textB: String)? {
@@ -49,8 +52,41 @@ struct Part2PracticeView: View {
         .navigationTitle(passage.title)
         .navigationBarTitleDisplayMode(.inline)
         .prostBackground()
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    showAddWordSheet = true
+                } label: {
+                    Label("Add Word", systemImage: "plus.circle")
+                }
+            }
+        }
         .safeAreaInset(edge: .bottom) {
             submitButton
+        }
+        .sheet(isPresented: $showAddWordSheet) {
+            AddWordToListSheet(
+                passage: passage,
+                onSave: { word, context, notes in
+                    let vocabularyWord = VocabularyWord(
+                        userId: appState.currentUser.id,
+                        word: word,
+                        context: context,
+                        sourcePassageId: passage.id,
+                        sourcePassageTitle: passage.title,
+                        level: passage.level,
+                        notes: notes
+                    )
+                    appState.addWord(vocabularyWord)
+                    savedWordText = word
+                    showWordSavedAlert = true
+                }
+            )
+        }
+        .alert("Word Saved!", isPresented: $showWordSavedAlert) {
+            Button("OK", role: .cancel) { }
+        } message: {
+            Text("'\(savedWordText)' has been added to your word list.")
         }
         .navigationDestination(isPresented: $showResults) {
             if let completion = completion {
