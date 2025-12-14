@@ -14,6 +14,8 @@ struct ReadingPassageView: View {
     @State private var goToQuestions = false
     @State private var showManualCompleteConfirmation = false
     @State private var showSuccessMessage = false
+    @State private var showAddWordSheet = false
+    @State private var selectedWordText = ""
     
     private var isAlreadyCompleted: Bool {
         appState.isCompleted(passage.id)
@@ -81,8 +83,38 @@ struct ReadingPassageView: View {
         .navigationTitle(passage.level)
         .navigationBarTitleDisplayMode(.inline)
         .prostBackground()
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Menu {
+                    Button {
+                        showAddWordSheet = true
+                    } label: {
+                        Label("Add Word to List", systemImage: "plus.circle")
+                    }
+                } label: {
+                    Image(systemName: "book.closed")
+                }
+            }
+        }
         .navigationDestination(isPresented: $goToQuestions) {
             ReadingQuestionsView(passage: passage)
+        }
+        .sheet(isPresented: $showAddWordSheet) {
+            AddWordToListSheet(
+                passage: passage,
+                onSave: { word, context, notes in
+                    let vocabularyWord = VocabularyWord(
+                        userId: appState.currentUser.id,
+                        word: word,
+                        context: context,
+                        sourcePassageId: passage.id,
+                        sourcePassageTitle: passage.title,
+                        level: passage.level,
+                        notes: notes
+                    )
+                    appState.addWord(vocabularyWord)
+                }
+            )
         }
         .alert("Mark as Complete?", isPresented: $showManualCompleteConfirmation) {
             Button("Cancel", role: .cancel) { }

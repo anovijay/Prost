@@ -183,6 +183,43 @@ struct UserProgress: Identifiable, Codable, Hashable {
     }
 }
 
+// MARK: - Vocabulary Word
+
+struct VocabularyWord: Identifiable, Codable, Hashable {
+    let id: UUID
+    let userId: UUID
+    let word: String
+    let context: String  // The sentence or text where the word was found
+    let sourcePassageId: UUID
+    let sourcePassageTitle: String
+    let level: String  // A1, A2, B1, B2
+    let addedAt: Date
+    var notes: String?  // Optional user notes
+    var isFavorite: Bool
+    
+    init(id: UUID = UUID(),
+         userId: UUID,
+         word: String,
+         context: String,
+         sourcePassageId: UUID,
+         sourcePassageTitle: String,
+         level: String,
+         addedAt: Date = Date(),
+         notes: String? = nil,
+         isFavorite: Bool = false) {
+        self.id = id
+        self.userId = userId
+        self.word = word
+        self.context = context
+        self.sourcePassageId = sourcePassageId
+        self.sourcePassageTitle = sourcePassageTitle
+        self.level = level
+        self.addedAt = addedAt
+        self.notes = notes
+        self.isFavorite = isFavorite
+    }
+}
+
 // MARK: - Legacy (Deprecated - use UserProgress instead)
 
 @available(*, deprecated, message: "Use UserProgress instead")

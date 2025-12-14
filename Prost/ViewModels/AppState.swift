@@ -19,17 +19,20 @@ final class AppState: ObservableObject {
     @Published var currentUser: User
     @Published var completions: [PassageCompletion]
     @Published var userProgress: [UserProgress]
+    @Published var vocabularyWords: [VocabularyWord] = []
     
     // MARK: - Initialization
     
     init(
         currentUser: User,
         completions: [PassageCompletion],
-        userProgress: [UserProgress]
+        userProgress: [UserProgress],
+        vocabularyWords: [VocabularyWord] = []
     ) {
         self.currentUser = currentUser
         self.completions = completions
         self.userProgress = userProgress
+        self.vocabularyWords = vocabularyWords
     }
     
     // Convenience initializer with sample data

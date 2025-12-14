@@ -20,6 +20,11 @@ struct ContentView: View {
                     Label("Listening", systemImage: "headphones")
                 }
             
+            WordListView()
+                .tabItem {
+                    Label("Words", systemImage: "book.closed")
+                }
+            
             PlaceholderTabView(title: "Sprechen")
                 .tabItem {
                     Label("Sprechen", systemImage: "waveform")
