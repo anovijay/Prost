@@ -29,6 +29,22 @@ struct A1Part1PracticesView: View {
         return info
     }
     
+    // Sort practices: incomplete first, then completed
+    private var sortedPractices: [ReadingPassage] {
+        practices.sorted { practice1, practice2 in
+            let isCompleted1 = appState.isCompleted(practice1.id)
+            let isCompleted2 = appState.isCompleted(practice2.id)
+            
+            // If one is completed and the other isn't, incomplete comes first
+            if isCompleted1 != isCompleted2 {
+                return !isCompleted1
+            }
+            
+            // Otherwise maintain original order
+            return false
+        }
+    }
+    
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
@@ -78,8 +94,8 @@ struct A1Part1PracticesView: View {
                     .frame(maxWidth: .infinity)
                     .padding(40)
                 } else {
-                    // Practices list
-                    ForEach(practices) { practice in
+                    // Practices list (sorted: incomplete first, completed at bottom)
+                    ForEach(sortedPractices) { practice in
                         NavigationLink {
                             ReadingPassageView(passage: practice)
                         } label: {

@@ -57,16 +57,25 @@ struct Part1JSONLoader {
     
     // MARK: - Public Methods
     
-    /// Load A1 Part 1 practices from reading.json
+    /// Load A1 Part 1 practices from reading.json and reading2.json
     static func loadPart1Practices() throws -> [ReadingPassage] {
-        let part1Data = try loadSeedData(filename: "reading")
-        let practices = transformToPractices(part1Data)
+        var allPractices: [ReadingPassage] = []
         
-        guard !practices.isEmpty else {
+        // Load reading.json (L1-L25)
+        let part1Data = try loadSeedData(filename: "reading")
+        let practices1 = transformToPractices(part1Data, startIndex: 0)
+        allPractices.append(contentsOf: practices1)
+        
+        // Load reading2.json (N1-N25)
+        let part2Data = try loadSeedData(filename: "reading2")
+        let practices2 = transformToPractices(part2Data, startIndex: practices1.count)
+        allPractices.append(contentsOf: practices2)
+        
+        guard !allPractices.isEmpty else {
             throw LoaderError.emptyData
         }
         
-        return practices
+        return allPractices
     }
     
     // MARK: - Private Methods
@@ -89,7 +98,7 @@ struct Part1JSONLoader {
     }
     
     /// Transform seed format into [ReadingPassage]
-    private static func transformToPractices(_ seedData: SeedPart1Data) -> [ReadingPassage] {
+    private static func transformToPractices(_ seedData: SeedPart1Data, startIndex: Int) -> [ReadingPassage] {
         var practices: [ReadingPassage] = []
         
         for (index, test) in seedData.tests.enumerated() {
@@ -111,9 +120,10 @@ struct Part1JSONLoader {
                 questions.append(question)
             }
             
-            // Create practice passage
+            // Create practice passage with continuous numbering
+            let practiceNumber = startIndex + index + 1
             let practice = ReadingPassage(
-                title: "Practice \(index + 1): \(getPracticeTitle(from: test.text))",
+                title: "Practice \(practiceNumber): \(getPracticeTitle(from: test.text))",
                 level: "A1",
                 text: test.text,
                 questions: questions,
