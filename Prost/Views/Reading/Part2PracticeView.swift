@@ -16,6 +16,7 @@ struct Part2PracticeView: View {
     @State private var selectedOptionID: UUID?
     @State private var showResults = false
     @State private var completion: PassageCompletion?
+    @State private var questionResults: [ReadingQuestionResult] = []
     
     // Extract situation and texts from the question prompt
     private var situationComponents: (situation: String, textA: String, textB: String)? {
@@ -55,10 +56,12 @@ struct Part2PracticeView: View {
             if let completion = completion {
                 ReadingResultsView(
                     passage: passage,
+                    results: questionResults,
                     completion: completion,
                     onRetake: {
                         selectedOptionID = nil
                         self.completion = nil
+                        questionResults = []
                         showResults = false
                     }
                 )
@@ -173,6 +176,13 @@ struct Part2PracticeView: View {
         
         let isCorrect = question.isCorrect(selectedOptionID: selectedOptionID)
         let score = isCorrect ? 1.0 : 0.0
+        
+        // Create question result
+        let result = ReadingQuestionResult(
+            question: question,
+            selectedOptionID: selectedOptionID
+        )
+        questionResults = [result]
         
         // Create completion
         let attemptNumber = appState.nextAttemptNumber(for: passage.id)
