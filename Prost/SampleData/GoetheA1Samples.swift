@@ -32,7 +32,19 @@ extension GoetheA1Option {
 // MARK: - Sample Exam
 
 extension GoetheA1ReadingExam {
-    /// Complete sample Goethe A1 Reading exam
+    /// Load exam from seed_data/reading.json (real data)
+    static var fromSeedData: GoetheA1ReadingExam {
+        do {
+            let exams = try GoetheA1JSONLoader.loadGoetheA1Exams()
+            return exams.first ?? sampleExam1  // Fallback to hardcoded if load fails
+        } catch {
+            print("⚠️ Failed to load seed data: \(error.localizedDescription)")
+            print("   Falling back to hardcoded sample exam")
+            return sampleExam1
+        }
+    }
+    
+    /// Complete sample Goethe A1 Reading exam (hardcoded fallback)
     static var sampleExam1: GoetheA1ReadingExam {
         // PART 1: Short Informal Texts (True/False)
         let part1Text = GoetheA1Text(
