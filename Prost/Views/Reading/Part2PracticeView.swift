@@ -37,82 +37,9 @@ struct Part2PracticeView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: ProstTheme.Spacing.section) {
                 if let components = situationComponents, let question = passage.questions.first {
-                    // Situation
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("Situation")
-                            .font(ProstTheme.Typography.caption.weight(.semibold))
-                            .foregroundStyle(.secondary)
-                            .textCase(.uppercase)
-                        
-                        Text(components.situation)
-                            .font(ProstTheme.Typography.body)
-                            .foregroundStyle(.primary)
-                            .padding(ProstTheme.Spacing.item)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .background(ProstTheme.Colors.accentSoft)
-                            .cornerRadius(ProstTheme.Radius.card)
-                    }
-                    
-                    // Text A
-                    VStack(alignment: .leading, spacing: 8) {
-                        HStack {
-                            Text("Text A")
-                                .font(ProstTheme.Typography.title.weight(.bold))
-                                .foregroundStyle(.primary)
-                            Spacer()
-                            if selectedOptionID == question.options.first?.id {
-                                Image(systemName: "checkmark.circle.fill")
-                                    .foregroundStyle(.accentColor)
-                            }
-                        }
-                        
-                        Text(components.textA)
-                            .font(ProstTheme.Typography.body)
-                            .foregroundStyle(.primary)
-                            .lineSpacing(4)
-                    }
-                    .padding(ProstTheme.Spacing.item)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(selectedOptionID == question.options.first?.id ? ProstTheme.Colors.accentSoft : ProstTheme.Colors.card)
-                    .cornerRadius(ProstTheme.Radius.card)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: ProstTheme.Radius.card)
-                            .stroke(selectedOptionID == question.options.first?.id ? ProstTheme.Colors.accentBorder : ProstTheme.Colors.cardBorder, lineWidth: selectedOptionID == question.options.first?.id ? 2 : 1)
-                    )
-                    .onTapGesture {
-                        selectedOptionID = question.options.first?.id
-                    }
-                    
-                    // Text B
-                    VStack(alignment: .leading, spacing: 8) {
-                        HStack {
-                            Text("Text B")
-                                .font(ProstTheme.Typography.title.weight(.bold))
-                                .foregroundStyle(.primary)
-                            Spacer()
-                            if selectedOptionID == question.options.last?.id {
-                                Image(systemName: "checkmark.circle.fill")
-                                    .foregroundStyle(.accentColor)
-                            }
-                        }
-                        
-                        Text(components.textB)
-                            .font(ProstTheme.Typography.body)
-                            .foregroundStyle(.primary)
-                            .lineSpacing(4)
-                    }
-                    .padding(ProstTheme.Spacing.item)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(selectedOptionID == question.options.last?.id ? ProstTheme.Colors.accentSoft : ProstTheme.Colors.card)
-                    .cornerRadius(ProstTheme.Radius.card)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: ProstTheme.Radius.card)
-                            .stroke(selectedOptionID == question.options.last?.id ? ProstTheme.Colors.accentBorder : ProstTheme.Colors.cardBorder, lineWidth: selectedOptionID == question.options.last?.id ? 2 : 1)
-                    )
-                    .onTapGesture {
-                        selectedOptionID = question.options.last?.id
-                    }
-                    
+                    situationView(components.situation)
+                    textAView(components.textA, question: question)
+                    textBView(components.textB, question: question)
                     Spacer(minLength: 80)
                 }
             }
@@ -122,18 +49,7 @@ struct Part2PracticeView: View {
         .navigationBarTitleDisplayMode(.inline)
         .prostBackground()
         .safeAreaInset(edge: .bottom) {
-            Button {
-                submitAnswer()
-            } label: {
-                Text(selectedOptionID == nil ? "Select an option" : "Submit Answer")
-                    .font(ProstTheme.Typography.title)
-                    .frame(maxWidth: .infinity)
-                    .padding(16)
-            }
-            .buttonStyle(.borderedProminent)
-            .disabled(selectedOptionID == nil)
-            .padding(ProstTheme.Spacing.screenPadding)
-            .background(.ultraThinMaterial)
+            submitButton
         }
         .navigationDestination(isPresented: $showResults) {
             if let completion = completion {
@@ -148,6 +64,106 @@ struct Part2PracticeView: View {
                 )
             }
         }
+    }
+    
+    // MARK: - Subviews
+    
+    private func situationView(_ situation: String) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Situation")
+                .font(ProstTheme.Typography.caption.weight(.semibold))
+                .foregroundStyle(.secondary)
+                .textCase(.uppercase)
+            
+            Text(situation)
+                .font(ProstTheme.Typography.body)
+                .foregroundStyle(.primary)
+                .padding(ProstTheme.Spacing.item)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(ProstTheme.Colors.accentSoft)
+                .cornerRadius(ProstTheme.Radius.card)
+        }
+    }
+    
+    private func textAView(_ textA: String, question: ReadingQuestion) -> some View {
+        let isSelected = selectedOptionID == question.options.first?.id
+        
+        return VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Text("Text A")
+                    .font(ProstTheme.Typography.title.weight(.bold))
+                    .foregroundStyle(.primary)
+                Spacer()
+                if isSelected {
+                    Image(systemName: "checkmark.circle.fill")
+                        .foregroundStyle(Color.accentColor)
+                }
+            }
+            
+            Text(textA)
+                .font(ProstTheme.Typography.body)
+                .foregroundStyle(.primary)
+                .lineSpacing(4)
+        }
+        .padding(ProstTheme.Spacing.item)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(isSelected ? ProstTheme.Colors.accentSoft : ProstTheme.Colors.card)
+        .cornerRadius(ProstTheme.Radius.card)
+        .overlay(
+            RoundedRectangle(cornerRadius: ProstTheme.Radius.card)
+                .stroke(isSelected ? ProstTheme.Colors.accentBorder : ProstTheme.Colors.cardBorder, lineWidth: isSelected ? 2 : 1)
+        )
+        .onTapGesture {
+            selectedOptionID = question.options.first?.id
+        }
+    }
+    
+    private func textBView(_ textB: String, question: ReadingQuestion) -> some View {
+        let isSelected = selectedOptionID == question.options.last?.id
+        
+        return VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Text("Text B")
+                    .font(ProstTheme.Typography.title.weight(.bold))
+                    .foregroundStyle(.primary)
+                Spacer()
+                if isSelected {
+                    Image(systemName: "checkmark.circle.fill")
+                        .foregroundStyle(Color.accentColor)
+                }
+            }
+            
+            Text(textB)
+                .font(ProstTheme.Typography.body)
+                .foregroundStyle(.primary)
+                .lineSpacing(4)
+        }
+        .padding(ProstTheme.Spacing.item)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(isSelected ? ProstTheme.Colors.accentSoft : ProstTheme.Colors.card)
+        .cornerRadius(ProstTheme.Radius.card)
+        .overlay(
+            RoundedRectangle(cornerRadius: ProstTheme.Radius.card)
+                .stroke(isSelected ? ProstTheme.Colors.accentBorder : ProstTheme.Colors.cardBorder, lineWidth: isSelected ? 2 : 1)
+        )
+        .onTapGesture {
+            selectedOptionID = question.options.last?.id
+        }
+    }
+    
+    private var submitButton: some View {
+        Button {
+            submitAnswer()
+        } label: {
+            Text(selectedOptionID == nil ? "Select an option" : "Submit Answer")
+                .font(ProstTheme.Typography.title)
+                .frame(maxWidth: .infinity)
+                .padding(16)
+        }
+        .buttonStyle(.borderedProminent)
+        .disabled(selectedOptionID == nil)
+        .padding(ProstTheme.Spacing.screenPadding)
+        .background(.ultraThinMaterial)
     }
     
     // MARK: - Actions
