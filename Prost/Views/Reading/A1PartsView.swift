@@ -108,7 +108,7 @@ struct PartCardView: View {
                 
                 Image(systemName: icon)
                     .font(.title2)
-                    .foregroundStyle(isDisabled ? .secondary : .accentColor)
+                    .foregroundStyle(isDisabled ? .secondary : Color.accentColor)
             }
             
             VStack(alignment: .leading, spacing: 4) {
