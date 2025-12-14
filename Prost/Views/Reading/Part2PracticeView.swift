@@ -17,7 +17,6 @@ struct Part2PracticeView: View {
     @State private var showResults = false
     @State private var completion: PassageCompletion?
     @State private var questionResults: [ReadingQuestionResult] = []
-    @State private var showAddWordSheet = false
     @State private var showWordSavedAlert = false
     @State private var savedWordText = ""
     
@@ -52,36 +51,8 @@ struct Part2PracticeView: View {
         .navigationTitle(passage.title)
         .navigationBarTitleDisplayMode(.inline)
         .prostBackground()
-        .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                Button {
-                    showAddWordSheet = true
-                } label: {
-                    Label("Add Word", systemImage: "plus.circle")
-                }
-            }
-        }
         .safeAreaInset(edge: .bottom) {
             submitButton
-        }
-        .sheet(isPresented: $showAddWordSheet) {
-            AddWordToListSheet(
-                passage: passage,
-                onSave: { word, context, notes in
-                    let vocabularyWord = VocabularyWord(
-                        userId: appState.currentUser.id,
-                        word: word,
-                        context: context,
-                        sourcePassageId: passage.id,
-                        sourcePassageTitle: passage.title,
-                        level: passage.level,
-                        notes: notes
-                    )
-                    appState.addWord(vocabularyWord)
-                    savedWordText = word
-                    showWordSavedAlert = true
-                }
-            )
         }
         .alert("Word Saved!", isPresented: $showWordSavedAlert) {
             Button("OK", role: .cancel) { }
@@ -114,13 +85,13 @@ struct Part2PracticeView: View {
                 .foregroundStyle(.secondary)
                 .textCase(.uppercase)
             
-            Text(situation)
-                .font(ProstTheme.Typography.body)
-                .foregroundStyle(.primary)
-                .padding(ProstTheme.Spacing.item)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .background(ProstTheme.Colors.accentSoft)
-                .cornerRadius(ProstTheme.Radius.card)
+            StyledSelectableTextView(text: situation) { selectedWord in
+                saveWord(selectedWord, from: situation)
+            }
+            .padding(ProstTheme.Spacing.item)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(ProstTheme.Colors.accentSoft)
+            .cornerRadius(ProstTheme.Radius.card)
         }
     }
     
@@ -139,10 +110,9 @@ struct Part2PracticeView: View {
                 }
             }
             
-            Text(textA)
-                .font(ProstTheme.Typography.body)
-                .foregroundStyle(.primary)
-                .lineSpacing(4)
+            StyledSelectableTextView(text: textA) { selectedWord in
+                saveWord(selectedWord, from: textA)
+            }
         }
         .padding(ProstTheme.Spacing.item)
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -172,10 +142,9 @@ struct Part2PracticeView: View {
                 }
             }
             
-            Text(textB)
-                .font(ProstTheme.Typography.body)
-                .foregroundStyle(.primary)
-                .lineSpacing(4)
+            StyledSelectableTextView(text: textB) { selectedWord in
+                saveWord(selectedWord, from: textB)
+            }
         }
         .padding(ProstTheme.Spacing.item)
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -188,6 +157,32 @@ struct Part2PracticeView: View {
         .onTapGesture {
             selectedOptionID = question.options.last?.id
         }
+    }
+    
+    // MARK: - Word Saving Helper
+    
+    private func saveWord(_ selectedWord: String, from text: String) {
+        let cleanWord = selectedWord.trimmingCharacters(in: .whitespacesAndNewlines)
+            .trimmingCharacters(in: .punctuationCharacters)
+        
+        guard !cleanWord.isEmpty else { return }
+        
+        // Extract context (sentence containing the word)
+        let sentences = text.components(separatedBy: CharacterSet(charactersIn: ".!?"))
+        let context = sentences.first(where: { $0.contains(selectedWord) }) ?? text
+        
+        let vocabularyWord = VocabularyWord(
+            userId: appState.currentUser.id,
+            word: cleanWord,
+            context: context.trimmingCharacters(in: .whitespacesAndNewlines),
+            sourcePassageId: passage.id,
+            sourcePassageTitle: passage.title,
+            level: passage.level
+        )
+        
+        appState.addWord(vocabularyWord)
+        savedWordText = cleanWord
+        showWordSavedAlert = true
     }
     
     private var submitButton: some View {

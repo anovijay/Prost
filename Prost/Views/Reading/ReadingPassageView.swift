@@ -14,7 +14,6 @@ struct ReadingPassageView: View {
     @State private var goToQuestions = false
     @State private var showManualCompleteConfirmation = false
     @State private var showSuccessMessage = false
-    @State private var showAddWordSheet = false
     @State private var showWordSavedAlert = false
     @State private var savedWordText = ""
     
@@ -41,23 +40,32 @@ struct ReadingPassageView: View {
                     .cornerRadius(8)
                 }
                 
-                VStack(alignment: .trailing, spacing: 8) {
-                    Text(passage.text)
-                        .font(ProstTheme.Typography.body)
-                        .foregroundStyle(.primary)
-                        .lineSpacing(6)
-                        .textSelection(.enabled)
-                        .prostCard()
-                    
-                    // Quick add word button
-                    Button {
-                        showAddWordSheet = true
-                    } label: {
-                        Label("Add Word to List", systemImage: "plus.circle")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
+                VStack(spacing: 8) {
+                    StyledSelectableTextView(text: passage.text) { selectedWord in
+                        // Word selected from context menu
+                        let cleanWord = selectedWord.trimmingCharacters(in: .whitespacesAndNewlines)
+                            .trimmingCharacters(in: .punctuationCharacters)
+                        
+                        guard !cleanWord.isEmpty else { return }
+                        
+                        // Extract context (sentence containing the word)
+                        let sentences = passage.text.components(separatedBy: CharacterSet(charactersIn: ".!?"))
+                        let context = sentences.first(where: { $0.contains(selectedWord) }) ?? passage.text
+                        
+                        let vocabularyWord = VocabularyWord(
+                            userId: appState.currentUser.id,
+                            word: cleanWord,
+                            context: context.trimmingCharacters(in: .whitespacesAndNewlines),
+                            sourcePassageId: passage.id,
+                            sourcePassageTitle: passage.title,
+                            level: passage.level
+                        )
+                        
+                        appState.addWord(vocabularyWord)
+                        savedWordText = cleanWord
+                        showWordSavedAlert = true
                     }
-                    .buttonStyle(.plain)
+                    .prostCard()
                 }
 
                 Spacer(minLength: 80)
@@ -98,25 +106,6 @@ struct ReadingPassageView: View {
         .prostBackground()
         .navigationDestination(isPresented: $goToQuestions) {
             ReadingQuestionsView(passage: passage)
-        }
-        .sheet(isPresented: $showAddWordSheet) {
-            AddWordToListSheet(
-                passage: passage,
-                onSave: { word, context, notes in
-                    let vocabularyWord = VocabularyWord(
-                        userId: appState.currentUser.id,
-                        word: word,
-                        context: context,
-                        sourcePassageId: passage.id,
-                        sourcePassageTitle: passage.title,
-                        level: passage.level,
-                        notes: notes
-                    )
-                    appState.addWord(vocabularyWord)
-                    savedWordText = word
-                    showWordSavedAlert = true
-                }
-            )
         }
         .alert("Word Saved!", isPresented: $showWordSavedAlert) {
             Button("OK", role: .cancel) { }
