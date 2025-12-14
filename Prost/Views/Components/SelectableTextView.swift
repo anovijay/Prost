@@ -24,13 +24,7 @@ struct SelectableTextView: UIViewRepresentable {
         textView.font = .systemFont(ofSize: 17, weight: .regular)
         textView.textColor = .label
         
-        // Add custom menu items
-        let addWordAction = UIAction(title: "Add to Word List", image: UIImage(systemName: "plus.circle")) { _ in
-            if let selectedText = textView.selectedText, !selectedText.isEmpty {
-                context.coordinator.parent.onWordSelected(selectedText)
-            }
-        }
-        
+        // Add custom context menu interaction
         textView.addInteraction(UIContextMenuInteraction(delegate: context.coordinator))
         
         return textView
@@ -125,11 +119,12 @@ struct StyledSelectableTextView: View {
     }
     
     private func calculateHeight() -> CGFloat {
-        let width = UIScreen.main.bounds.width - 64 // Account for card padding
+        // Use a reasonable default width that works for most devices
+        let estimatedWidth: CGFloat = 350
         let font = UIFont.systemFont(ofSize: 17, weight: .regular)
         let attributes: [NSAttributedString.Key: Any] = [.font: font]
         let size = (text as NSString).boundingRect(
-            with: CGSize(width: width, height: .greatestFiniteMagnitude),
+            with: CGSize(width: estimatedWidth, height: .greatestFiniteMagnitude),
             options: [.usesLineFragmentOrigin, .usesFontLeading],
             attributes: attributes,
             context: nil
