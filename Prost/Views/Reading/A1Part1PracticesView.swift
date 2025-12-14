@@ -1,16 +1,33 @@
 //
-//  GoetheA1ExamsView.swift
+//  A1Part1PracticesView.swift
 //  Prost
 //
-//  List of Goethe A1 practice exams loaded from JSON
+//  List of A1 Part 1 practices (informal texts with Richtig/Falsch questions)
 //
 
 import SwiftUI
 
-struct GoetheA1ExamsView: View {
-    @State private var exams: [GoetheA1ReadingExam] = []
+struct A1Part1PracticesView: View {
+    @EnvironmentObject private var appState: AppState
+    @State private var practices: [ReadingPassage] = []
     @State private var isLoading = true
     @State private var errorMessage: String?
+    
+    // Build completion info for all practices
+    private var practiceCompletionInfo: [UUID: PracticeCompletionInfo] {
+        var info: [UUID: PracticeCompletionInfo] = [:]
+        for practice in practices {
+            let history = appState.completionHistory(for: practice.id)
+            if !history.isEmpty {
+                let bestScore = history.map { $0.score }.max() ?? 0.0
+                info[practice.id] = PracticeCompletionInfo(
+                    attemptCount: history.count,
+                    bestScore: bestScore
+                )
+            }
+        }
+        return info
+    }
     
     var body: some View {
         ScrollView {
@@ -20,7 +37,7 @@ struct GoetheA1ExamsView: View {
                     VStack(spacing: 12) {
                         ProgressView()
                             .scaleEffect(1.5)
-                        Text("Loading exams...")
+                        Text("Loading practices...")
                             .font(ProstTheme.Typography.caption)
                             .foregroundStyle(.secondary)
                     }
@@ -32,7 +49,7 @@ struct GoetheA1ExamsView: View {
                         Image(systemName: "exclamationmark.triangle")
                             .font(.system(size: 48))
                             .foregroundStyle(.orange)
-                        Text("Failed to load exams")
+                        Text("Failed to load practices")
                             .font(ProstTheme.Typography.title)
                         Text(error)
                             .font(ProstTheme.Typography.caption)
@@ -40,33 +57,36 @@ struct GoetheA1ExamsView: View {
                             .multilineTextAlignment(.center)
                         
                         Button("Retry") {
-                            loadExams()
+                            loadPractices()
                         }
                         .buttonStyle(.borderedProminent)
                     }
                     .frame(maxWidth: .infinity)
                     .padding(40)
-                } else if exams.isEmpty {
+                } else if practices.isEmpty {
                     // Empty state
                     VStack(spacing: 12) {
                         Image(systemName: "doc.text")
                             .font(.system(size: 48))
                             .foregroundStyle(.secondary)
-                        Text("No exams available")
+                        Text("No practices available")
                             .font(ProstTheme.Typography.title)
-                        Text("Check back later for new practice exams")
+                        Text("Check back later for new practices")
                             .font(ProstTheme.Typography.caption)
                             .foregroundStyle(.secondary)
                     }
                     .frame(maxWidth: .infinity)
                     .padding(40)
                 } else {
-                    // Exams list
-                    ForEach(exams) { exam in
+                    // Practices list
+                    ForEach(practices) { practice in
                         NavigationLink {
-                            GoetheA1ExamView(exam: exam)
+                            ReadingPassageView(passage: practice)
                         } label: {
-                            GoetheExamCardView(exam: exam)
+                            PracticeCardView(
+                                practice: practice,
+                                completionInfo: practiceCompletionInfo[practice.id]
+                            )
                         }
                         .buttonStyle(.plain)
                     }
@@ -74,40 +94,41 @@ struct GoetheA1ExamsView: View {
             }
             .padding(ProstTheme.Spacing.screenPadding)
         }
-        .navigationTitle("Goethe A1 Exams")
+        .navigationTitle("A1 Part 1: Informal Texts")
         .navigationBarTitleDisplayMode(.inline)
         .prostBackground()
         .task {
-            loadExams()
+            loadPractices()
         }
     }
     
     // MARK: - Data Loading
     
-    private func loadExams() {
+    private func loadPractices() {
         isLoading = true
         errorMessage = nil
         
         do {
-            exams = try GoetheA1JSONLoader.loadGoetheA1Exams()
+            practices = try Part1JSONLoader.loadPart1Practices()
             isLoading = false
         } catch {
             errorMessage = error.localizedDescription
             isLoading = false
-            print("❌ Failed to load Goethe A1 exams: \(error)")
+            print("❌ Failed to load A1 Part 1 practices: \(error)")
         }
     }
 }
 
-// MARK: - Exam Card
+// MARK: - Practice Card
 
-struct GoetheExamCardView: View {
-    let exam: GoetheA1ReadingExam
+struct PracticeCardView: View {
+    let practice: ReadingPassage
+    let completionInfo: PracticeCompletionInfo?
     
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
             VStack(alignment: .leading, spacing: 6) {
-                Text(exam.title)
+                Text(practice.title)
                     .font(ProstTheme.Typography.title)
                     .foregroundStyle(.primary)
                 
@@ -115,22 +136,31 @@ struct GoetheExamCardView: View {
                     HStack(spacing: 4) {
                         Image(systemName: "doc.text")
                             .font(.caption)
-                        Text("\(exam.parts.count) parts")
+                        Text("1 text")
                             .font(ProstTheme.Typography.caption)
                     }
                     
                     HStack(spacing: 4) {
                         Image(systemName: "questionmark.circle")
                             .font(.caption)
-                        Text("\(exam.totalQuestions) questions")
+                        Text("\(practice.questions.count) questions")
                             .font(ProstTheme.Typography.caption)
                     }
                     
-                    HStack(spacing: 4) {
-                        Image(systemName: "clock")
-                            .font(.caption)
-                        Text("\(exam.duration) min")
-                            .font(ProstTheme.Typography.caption)
+                    // Completion status
+                    if let info = completionInfo {
+                        HStack(spacing: 4) {
+                            if info.bestScore == 1.0 {
+                                Image(systemName: "star.fill")
+                                    .foregroundStyle(.yellow)
+                            } else {
+                                Image(systemName: "checkmark.circle.fill")
+                                    .foregroundStyle(.green)
+                            }
+                            Text("\(Int(info.bestScore * 100))%")
+                                .font(ProstTheme.Typography.caption.weight(.medium))
+                        }
+                        .foregroundStyle(.green)
                     }
                 }
                 .foregroundStyle(.secondary)
@@ -144,6 +174,20 @@ struct GoetheExamCardView: View {
         }
         .padding(16)
         .prostCard()
+    }
+}
+
+// MARK: - Supporting Types
+
+struct PracticeCompletionInfo {
+    let attemptCount: Int
+    let bestScore: Double
+}
+
+#Preview {
+    NavigationStack {
+        A1Part1PracticesView()
+            .environmentObject(AppState())
     }
 }
 
