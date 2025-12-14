@@ -135,8 +135,7 @@ struct ReadingDashboardView: View {
             }
             .navigationDestination(for: String.self) { destination in
                 if destination == "goethe_a1" {
-                    Text("Goethe A1 Exams - Coming Soon")
-                        .prostBackground()
+                    GoetheA1ExamsView()
                 }
             }
         }
